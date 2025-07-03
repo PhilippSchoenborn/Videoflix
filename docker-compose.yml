@@ -1,0 +1,45 @@
+version: '3.8'
+
+services:
+  db:
+    image: postgres:latest
+    environment:
+      POSTGRES_DB: ${DB_NAME}
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    networks:
+      - videoflix_network
+
+  redis:
+    image: redis:alpine
+    ports:
+      - "6379:6379"
+    networks:
+      - videoflix_network
+
+  web:
+    build:
+      context: .
+      dockerfile: backend.Dockerfile
+    ports:
+      - "8000:8000"
+    volumes:
+      - .:/app
+    depends_on:
+      - db
+      - redis
+    env_file:
+      - .env
+    networks:
+      - videoflix_network
+
+volumes:
+  postgres_data:
+
+networks:
+  videoflix_network:
+    driver: bridge
