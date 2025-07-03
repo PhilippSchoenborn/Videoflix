@@ -95,3 +95,12 @@ class PasswordResetToken(models.Model):
     
     def __str__(self):
         return f"Reset token for {self.user.email}"
+    
+    def is_expired(self):
+        """
+        Check if token is expired (24 hours)
+        """
+        from datetime import timedelta
+        from django.utils import timezone
+        
+        return self.created_at < timezone.now() - timedelta(hours=24)
