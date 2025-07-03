@@ -48,7 +48,7 @@ INSTALLED_APPS = [
     # Custom Apps
     'authentication',
     'videos',
-    'core_utils',
+    'utils',
 ]
 
 MIDDLEWARE = [

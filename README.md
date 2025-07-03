@@ -156,7 +156,7 @@ videoflix-backend/
 │   ├── serializers.py      # Video serializers
 │   ├── utils.py            # Video processing utilities
 │   └── urls.py             # URL configuration
-├── core_utils/             # Shared utilities
+├── utils/                  # Shared utilities
 │   └── utils.py            # Common utility functions
 ├── core/                   # Django project settings
 │   ├── settings.py         # Main configuration

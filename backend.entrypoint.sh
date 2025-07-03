@@ -25,7 +25,7 @@ python manage.py migrate
 # Then create app-specific migrations
 python manage.py makemigrations authentication
 python manage.py makemigrations videos  
-python manage.py makemigrations core_utils
+python manage.py makemigrations utils
 
 # Apply the new migrations
 python manage.py migrate
