@@ -12,6 +12,8 @@
   
   body {
     @apply font-sans antialiased;
+    overflow: hidden;
+    height: 100vh;
   }
 }
 
