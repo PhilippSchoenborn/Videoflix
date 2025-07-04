@@ -1,6 +1,7 @@
 .button {
-  width: 408px;
+  width: 152px;
   height: 48px;
+  padding: 12px 24px;
   border-radius: 40px;
   background-color: #2E3EDF;
   border: none;
@@ -9,6 +10,9 @@
   justify-content: center;
   cursor: pointer;
   margin: 0 auto;
+  gap: 10px;
+  opacity: 1;
+  box-sizing: border-box;
 }
 
 .button:disabled {
