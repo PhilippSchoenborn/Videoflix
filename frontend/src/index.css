@@ -1,0 +1,38 @@
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Custom Videoflix Styles based on Figma Design */
+@layer base {
+  html {
+    @apply text-white;
+  }
+  
+  body {
+    @apply font-sans antialiased;
+  }
+}
+
+@layer components {
+  .btn-primary {
+    @apply bg-videoflix-red hover:bg-videoflix-red-hover text-white font-semibold py-3 px-6 rounded transition-colors duration-200;
+  }
+  
+  .btn-secondary {
+    @apply bg-videoflix-gray hover:bg-videoflix-light-gray text-white font-semibold py-3 px-6 rounded border border-videoflix-light-gray transition-colors duration-200;
+  }
+  
+  .input-field {
+    @apply bg-videoflix-gray border border-videoflix-light-gray text-white placeholder-gray-400 rounded px-4 py-3 focus:outline-none focus:ring-2 focus:ring-videoflix-red focus:border-transparent;
+  }
+  
+  .card {
+    @apply bg-videoflix-dark rounded-lg overflow-hidden shadow-xl;
+  }
+  
+  .video-card {
+    @apply bg-videoflix-dark rounded-lg overflow-hidden shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105 cursor-pointer;
+  }
+}
