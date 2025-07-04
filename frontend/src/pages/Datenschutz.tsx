@@ -1,10 +1,12 @@
 import React from 'react';
 import LegalPage from './LegalPage';
 import BackArrow from '../components/BackArrow';
+import Header from '../components/Header';
 import styles from './LegalPage.module.css';
 
 const Datenschutz: React.FC = () => (
   <div style={{ position: 'relative', width: '100vw', height: '100vh' }}>
+    <Header />
     <BackArrow />
     <LegalPage title="Datenschutzerklärung">
       <div className={styles.sectionBlock}>
