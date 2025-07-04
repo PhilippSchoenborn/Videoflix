@@ -6,7 +6,7 @@ import Button from './Button';
 
 const Header: React.FC = () => {
   const location = useLocation();
-  const hideLoginButton = location.pathname === '/' || 
+  const hideLoginButton = location.pathname === '/login' || 
                           location.pathname === '/impressum' || 
                           location.pathname === '/datenschutz';
 
@@ -14,7 +14,7 @@ const Header: React.FC = () => {
     <header className={styles.header}>
       <img src={logoSvg} alt="Videoflix Logo" />
       {!hideLoginButton && (
-        <Link to="/" className={styles.loginLink}>
+        <Link to="/login" className={styles.loginLink}>
           <Button>Login</Button>
         </Link>
       )}

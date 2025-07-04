@@ -42,6 +42,9 @@ export default function LoginPage() {
           className={styles.header}
         >
           <img src={logoSvg} alt="Videoflix Logo" />
+          <Link to="/" className={styles.backToHomeButton}>
+            Back to Home
+          </Link>
         </header>
 
         {/* Error Message */}
