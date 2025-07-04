@@ -1,0 +1,40 @@
+.arrowButton {
+  position: absolute;
+  top: 32px;
+  left: 32px;
+  z-index: 2;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  animation: slideLeft 1.2s infinite alternate;
+}
+
+@keyframes slideLeft {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-10px); }
+}
+
+.arrowIconWrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+}
+
+.arrowIcon {
+  width: 48px;
+  height: 48px;
+  filter: drop-shadow(0 2px 8px rgba(0,0,0,0.3));
+}
+
+.arrowOverlay {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: rgba(46,62,223,0.08);
+  pointer-events: none;
+}

@@ -1,0 +1,106 @@
+.container {
+  width: 100vw;
+  height: 100vh;
+  min-width: 1440px;
+  min-height: 900px;
+  position: relative;
+  font-family: 'DM Sans', sans-serif;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.background {
+  position: fixed;
+  inset: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: 0;
+  background: linear-gradient(180deg, rgba(0,0,0,0.8) -27.44%, rgba(0,0,0,0.44) 44.23%, rgba(0,0,0,0.8) 100%), url('../assets/background_LogIn.jpg');
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+
+.arrowButton {
+  position: absolute;
+  top: 32px;
+  left: 32px;
+  z-index: 2;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  animation: bounce 1.2s infinite alternate;
+}
+
+@keyframes bounce {
+  0% { transform: translateY(0); }
+  100% { transform: translateY(-10px); }
+}
+
+.arrowIcon {
+  width: 48px;
+  height: 48px;
+  filter: drop-shadow(0 2px 8px rgba(0,0,0,0.3));
+}
+
+.contentBox {
+  position: relative;
+  z-index: 1;
+  width: 700px;
+  max-height: calc(100vh - 96px);
+  margin: 48px auto;
+  padding: 48px 56px;
+  border-radius: 32px;
+  background: #1B1B22D9;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: flex-start;
+  gap: 24px;
+  overflow-y: auto !important;
+  overflow-x: hidden;
+  /* Scrollbar inside and rounded */
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.contentBox::-webkit-scrollbar {
+  display: none;
+}
+
+.title {
+  font-family: 'DM Sans', sans-serif;
+  font-weight: 700;
+  font-size: 40px;
+  color: #FFFFFF;
+  margin: 0 0 16px 0;
+}
+
+.content {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 18px;
+  color: #D3D3D3;
+  line-height: 1.6;
+}
+
+.sectionBlock {
+  background: rgba(111, 23, 255, 0.08);
+  border-radius: 18px;
+  padding: 24px 32px;
+  margin-bottom: 24px;
+  box-shadow: 0 2px 12px 0 rgba(111,23,255,0.07);
+}
+
+.sectionTitle {
+  font-size: 1.35rem;
+  font-weight: 700;
+  color: #6F17FF;
+  margin-bottom: 8px;
+  margin-top: 0;
+  letter-spacing: 0.5px;
+}

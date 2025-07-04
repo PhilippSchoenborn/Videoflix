@@ -4,6 +4,8 @@ import { AuthProvider, useAuth } from './context/AuthContext';
 import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
 import DashboardPage from './pages/DashboardPage';
+import Impressum from './pages/Impressum';
+import Datenschutz from './pages/Datenschutz';
 
 // Protected Route Component
 const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -65,6 +67,8 @@ function App() {
                 </ProtectedRoute>
               } 
             />
+            <Route path="/impressum" element={<Impressum />} />
+            <Route path="/datenschutz" element={<Datenschutz />} />
             <Route path="/" element={<Navigate to="/dashboard" />} />
           </Routes>
         </div>
