@@ -3,10 +3,36 @@
   max-width: 1440px;
   height: 108px;
   display: flex;
-  justify-content: flex-start;
+  justify-content: space-between;
   align-items: center;
-  padding: 10px 0 10px 48px;
+  padding: 10px 48px 10px 48px;
   margin: 0 auto;
   position: relative;
   z-index: 1;
+}
+
+.loginLink {
+  text-decoration: none;
+}
+
+.loginLink button {
+  width: 100px; /* Smaller width for header */
+  height: 48px; /* Same height as login button */
+  border-radius: 40px; /* Same border-radius as login button */
+  background-color: #2e3edf;
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  margin: 0; /* Remove auto margin */
+}
+
+.loginLink button span {
+  font-family: 'DM Sans', sans-serif;
+  font-weight: 700;
+  font-size: 18px;
+  line-height: 100%;
+  letter-spacing: 0%;
+  color: #ffffff;
 }
