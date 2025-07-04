@@ -6,12 +6,14 @@ import Button from './Button';
 
 const Header: React.FC = () => {
   const location = useLocation();
-  const isLoginPage = location.pathname === '/';
+  const hideLoginButton = location.pathname === '/' || 
+                          location.pathname === '/impressum' || 
+                          location.pathname === '/datenschutz';
 
   return (
     <header className={styles.header}>
       <img src={logoSvg} alt="Videoflix Logo" />
-      {!isLoginPage && (
+      {!hideLoginButton && (
         <Link to="/" className={styles.loginLink}>
           <Button>Login</Button>
         </Link>
