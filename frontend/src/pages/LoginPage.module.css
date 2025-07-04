@@ -54,6 +54,21 @@
   justify-content: center;
   position: relative;
   z-index: 1;
+  /* Make only the body scrollable if content overflows */
+  overflow: auto;
+  max-height: calc(100vh - 108px - 43px); /* subtract header and footer height */
+}
+
+/* Optional: Custom scrollbar for .body only */
+.body::-webkit-scrollbar {
+  width: 8px;
+}
+.body::-webkit-scrollbar-thumb {
+  background: #2E3EDF;
+  border-radius: 4px;
+}
+.body::-webkit-scrollbar-track {
+  background: transparent;
 }
 
 .form {
