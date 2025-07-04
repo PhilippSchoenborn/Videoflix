@@ -1,0 +1,173 @@
+.container {
+  width: 100vw;
+  height: 100vh;
+  min-width: 1440px;
+  min-height: 900px;
+  position: relative;
+  font-family: 'DM Sans', sans-serif;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+}
+
+.error {
+  position: absolute;
+  top: 150px;
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: #ff4444;
+  color: white;
+  padding: 10px 20px;
+  border-radius: 8px;
+  font-size: 14px;
+  z-index: 2;
+}
+
+.body {
+  flex: 1 1 auto;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  overflow: auto;
+  max-height: calc(100vh - 108px - 43px);
+  margin-top: 80px;
+}
+
+/* Optional: Custom scrollbar for .body only */
+.body::-webkit-scrollbar {
+  width: 8px;
+}
+.body::-webkit-scrollbar-thumb {
+  background: #2E3EDF;
+  border-radius: 4px;
+}
+.body::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.form {
+  width: 520px;
+  height: auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.formBox {
+  width: 520px;
+  min-height: 466px;
+  padding: 40px 56px;
+  border-radius: 48px;
+  background-color: #1B1B22D9;
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+  box-sizing: border-box;
+  align-items: center;
+  justify-content: center;
+}
+
+.title {
+  font-family: 'DM Sans', sans-serif;
+  font-weight: 700;
+  font-size: 48px;
+  line-height: 100%;
+  color: #FFFFFF;
+  margin: 0;
+  white-space: nowrap;
+}
+
+.inputGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.inputRow {
+  width: 408px;
+  height: 48px;
+  padding: 12px 24px;
+  border-radius: 12px;
+  background-color: #1C1A20CC;
+  border: 1px solid #2E3EDF;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.inputIcon {
+  width: 24px;
+  height: 24px;
+}
+
+.inputField {
+  flex: 1;
+  background-color: transparent;
+  border: none;
+  color: #FFFFFF;
+  font-family: 'DM Sans', sans-serif;
+  font-weight: 500;
+  font-size: 16px;
+  line-height: 100%;
+  outline: none;
+}
+
+.inputField::placeholder {
+  color: #9CA3AF;
+  font-family: 'DM Sans', sans-serif;
+  font-weight: 500;
+  font-size: 16px;
+  line-height: 100%;
+}
+
+.inputFieldPassword {
+  padding-right: 44px;
+}
+
+.visibilityIcon {
+  width: 24px;
+  height: 24px;
+  cursor: pointer;
+  position: absolute;
+  right: 24px;
+}
+
+.bottomGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  align-items: center;
+  width: 100%;
+}
+
+.signInRow {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  justify-content: center;
+}
+
+.signInText {
+  font-family: 'DM Sans', sans-serif;
+  font-weight: 500;
+  font-size: 16px;
+  line-height: 100%;
+  color: #FFFFFF;
+}
+
+.signInLink {
+  font-family: 'DM Sans', sans-serif;
+  font-weight: 700;
+  font-size: 16px;
+  line-height: 100%;
+  color: #2E3EDF;
+  text-decoration: none;
+}
+
+.signInLink:hover {
+  text-decoration: underline;
+}
