@@ -106,10 +106,7 @@ def verify_email_view(request, token):
     Email verification endpoint
     """
     try:
-        verification_token = get_object_or_404(
-            EmailVerificationToken,
-            token=token
-        )
+        verification_token = EmailVerificationToken.objects.get(token=token)
         
         user = verification_token.user
         user.is_email_verified = True
