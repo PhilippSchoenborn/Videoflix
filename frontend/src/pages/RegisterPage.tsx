@@ -1,11 +1,13 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { useFormValidation, REGISTER_VALIDATION_CONFIG } from '../hooks/useFormValidation';
+import { useToastContext } from '../context/ToastContext';
 import mailSvg from '../assets/mail.svg';
 import passwordSvg from '../assets/password.svg';
-import visibilitySvg from '../assets/visibility.svg';
 import styles from './RegisterPage.module.css';
 import Button from '../components/Button';
+import ValidatedInput from '../components/ValidatedInput';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
 import BackgroundImageSignUp from '../components/BackgroundImageSignUp';
@@ -16,32 +18,79 @@ export default function RegisterPage() {
     password: '',
     confirmPassword: '',
   });
-  const [showPassword, setShowPassword] = useState(false);
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState('');
+  const [serverError, setServerError] = useState('');
 
   const { register } = useAuth();
   const navigate = useNavigate();
+  const { showToast } = useToastContext();
+  const { validationState, validateField, validateForm, clearAllErrors } = useFormValidation(REGISTER_VALIDATION_CONFIG);
+
+  // Pre-fill email from localStorage if available
+  useEffect(() => {
+    const storedEmail = localStorage.getItem('email');
+    if (storedEmail) {
+      setFormData(prev => ({
+        ...prev,
+        email: storedEmail
+      }));
+      // Clear from localStorage after using it
+      localStorage.removeItem('email');
+    }
+  }, []);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
     setFormData(prev => ({
       ...prev,
-      [e.target.name]: e.target.value
+      [name]: value
     }));
+    
+    // Clear server error when user starts typing
+    if (serverError) {
+      setServerError('');
+    }
+  };
+
+  const handleBlur = (e: React.FocusEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    validateField(name, value, formData);
+  };
+
+  const extractErrorMessages = (errorData: any): string[] => {
+    const messages: string[] = [];
+    
+    if (typeof errorData === 'string') {
+      return [errorData];
+    }
+    
+    if (Array.isArray(errorData)) {
+      return errorData.flat();
+    }
+    
+    if (typeof errorData === 'object' && errorData !== null) {
+      Object.values(errorData).forEach(value => {
+        if (Array.isArray(value)) {
+          messages.push(...value);
+        } else if (typeof value === 'string') {
+          messages.push(value);
+        } else if (typeof value === 'object' && value !== null) {
+          messages.push(...extractErrorMessages(value));
+        }
+      });
+    }
+    
+    return messages;
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError('');
+    setServerError('');
+    clearAllErrors();
 
-    if (formData.password !== formData.confirmPassword) {
-      setError('Passwords do not match');
-      return;
-    }
-
-    if (formData.password.length < 8) {
-      setError('Password must be at least 8 characters long');
+    // Validate form
+    if (!validateForm(formData)) {
+      showToast('Please correct the errors in the form', 'error');
       return;
     }
 
@@ -56,10 +105,30 @@ export default function RegisterPage() {
         password: formData.password,
         password_confirm: formData.confirmPassword,
       };
+      
       await register(registerData);
-      navigate('/dashboard');
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Registration failed');
+      showToast('Registration successful! Please check your email for activation.', 'success');
+      navigate('/login');
+    } catch (err: any) {
+      console.error('Registration error:', err);
+      
+      // Handle different types of errors
+      if (err.response?.data) {
+        const errorMessages = extractErrorMessages(err.response.data);
+        if (errorMessages.length > 0) {
+          setServerError(errorMessages.join('. '));
+          showToast(errorMessages.join('. '), 'error');
+        } else {
+          setServerError('Registration failed. Please try again.');
+          showToast('Registration failed. Please try again.', 'error');
+        }
+      } else if (err.message) {
+        setServerError(err.message);
+        showToast(err.message, 'error');
+      } else {
+        setServerError('Registration failed. Please try again.');
+        showToast('Registration failed. Please try again.', 'error');
+      }
     } finally {
       setIsLoading(false);
     }
@@ -71,9 +140,9 @@ export default function RegisterPage() {
         <Header />
 
         {/* Error Message */}
-        {error && (
+        {serverError && (
           <div className={styles.error}>
-            {error}
+            {serverError}
           </div>
         )}
 
@@ -88,58 +157,54 @@ export default function RegisterPage() {
                 {/* Input Fields Container */}
                 <div className={styles.inputGroup}>
                   {/* Email Input */}
-                  <div className={styles.inputRow}>
-                    <img src={mailSvg} alt="Mail" className={styles.inputIcon} />
-                    <input
-                      type="email"
-                      name="email"
-                      value={formData.email}
-                      onChange={handleChange}
-                      placeholder="Email Address"
-                      required
-                      className={styles.inputField}
-                    />
-                  </div>
+                  <ValidatedInput
+                    type="email"
+                    name="email"
+                    value={formData.email}
+                    onChange={handleChange}
+                    onBlur={handleBlur}
+                    placeholder="Email Address"
+                    icon={mailSvg}
+                    iconAlt="Mail"
+                    required
+                    hasError={validationState.email?.hasError}
+                    errorMessage={validationState.email?.errorMessage}
+                    autoComplete="email"
+                  />
 
                   {/* Password Input */}
-                  <div className={styles.inputRow}>
-                    <img src={passwordSvg} alt="Password" className={styles.inputIcon} />
-                    <input
-                      type={showPassword ? 'text' : 'password'}
-                      name="password"
-                      value={formData.password}
-                      onChange={handleChange}
-                      placeholder="Password"
-                      required
-                      className={`${styles.inputField} ${styles.inputFieldPassword}`}
-                    />
-                    <img 
-                      src={visibilitySvg} 
-                      alt="Toggle visibility" 
-                      className={styles.visibilityIcon}
-                      onClick={() => setShowPassword(!showPassword)}
-                    />
-                  </div>
+                  <ValidatedInput
+                    type="password"
+                    name="password"
+                    value={formData.password}
+                    onChange={handleChange}
+                    onBlur={handleBlur}
+                    placeholder="Password"
+                    icon={passwordSvg}
+                    iconAlt="Password"
+                    required
+                    hasError={validationState.password?.hasError}
+                    errorMessage={validationState.password?.errorMessage}
+                    autoComplete="new-password"
+                    showPasswordToggle
+                  />
 
                   {/* Confirm Password Input */}
-                  <div className={styles.inputRow}>
-                    <img src={passwordSvg} alt="Password" className={styles.inputIcon} />
-                    <input
-                      type={showConfirmPassword ? 'text' : 'password'}
-                      name="confirmPassword"
-                      value={formData.confirmPassword}
-                      onChange={handleChange}
-                      placeholder="Confirm Password"
-                      required
-                      className={`${styles.inputField} ${styles.inputFieldPassword}`}
-                    />
-                    <img 
-                      src={visibilitySvg} 
-                      alt="Toggle visibility" 
-                      className={styles.visibilityIcon}
-                      onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                    />
-                  </div>
+                  <ValidatedInput
+                    type="password"
+                    name="confirmPassword"
+                    value={formData.confirmPassword}
+                    onChange={handleChange}
+                    onBlur={handleBlur}
+                    placeholder="Confirm Password"
+                    icon={passwordSvg}
+                    iconAlt="Password"
+                    required
+                    hasError={validationState.confirmPassword?.hasError}
+                    errorMessage={validationState.confirmPassword?.errorMessage}
+                    autoComplete="new-password"
+                    showPasswordToggle
+                  />
                 </div>
 
                 {/* Bottom Container */}
