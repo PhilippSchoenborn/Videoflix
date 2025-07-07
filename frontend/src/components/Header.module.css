@@ -8,7 +8,16 @@
   padding: 10px 48px 10px 48px;
   margin: 0 auto;
   position: relative;
-  z-index: 1;
+  z-index: 10;
+  box-sizing: border-box;
+  background: transparent;
+}
+
+.rightSection {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end; /* Ensure button aligns to the right */
+  flex-shrink: 0; /* Prevent shrinking */
 }
 
 .loginLink {
@@ -35,4 +44,30 @@
   line-height: 100%;
   letter-spacing: 0%;
   color: #ffffff;
+}
+
+/* Logout button specific styles in header */
+.rightSection button {
+  margin: 0; /* Remove any default margins */
+}
+
+.rightSection .loginLink {
+  margin: 0; /* Remove any default margins */
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .header {
+    padding: 10px 24px;
+  }
+  
+  .rightSection {
+    margin-left: auto;
+  }
+}
+
+@media (max-width: 480px) {
+  .header {
+    padding: 10px 16px;
+  }
 }
