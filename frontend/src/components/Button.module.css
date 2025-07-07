@@ -1,5 +1,5 @@
 .button {
-  width: 152px;
+  width: 200px; /* Reduced from 408px */
   height: 48px;
   padding: 12px 24px;
   border-radius: 40px;
@@ -13,11 +13,26 @@
   gap: 10px;
   opacity: 1;
   box-sizing: border-box;
+  transition: all 0.3s ease;
+  white-space: nowrap; /* Prevent text wrapping */
+}
+
+.button:hover {
+  background-color: #4A52E8; /* Lighter blue on hover */
+  transform: translateY(-2px); /* Subtle lift effect */
+  box-shadow: 0 4px 12px rgba(46, 62, 223, 0.3); /* Blue shadow */
+}
+
+.button:active {
+  transform: translateY(0); /* Reset transform on click */
+  box-shadow: 0 2px 8px rgba(46, 62, 223, 0.2); /* Reduced shadow */
 }
 
 .button:disabled {
   cursor: not-allowed;
   opacity: 0.7;
+  transform: none; /* No hover effects when disabled */
+  box-shadow: none;
 }
 
 .buttonText {
@@ -26,5 +41,104 @@
   font-size: 18px;
   line-height: 100%;
   letter-spacing: 0%;
+  color: #FFFFFF;
+}
+
+.button.logoutButton {
+  background-color: #E50914;
+  transition: background-color 0.3s ease;
+  width: 100px; /* Smaller width for header */
+  margin: 0; /* Remove auto margin for header placement */
+}
+
+.button.logoutButton:hover {
+  background-color: #B81D24;
+}
+
+.button.logoutButton:active {
+  background-color: #A01720;
+}
+
+/* Small button variant for navigation/header buttons */
+.buttonSmall {
+  width: 100px; /* Header-size */
+  height: 48px;
+  padding: 12px 16px; /* Reduced horizontal padding */
+  border-radius: 40px;
+  background-color: #2E3EDF;
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  margin: 0 auto;
+  gap: 8px; /* Reduced gap */
+  opacity: 1;
+  box-sizing: border-box;
+  transition: all 0.3s ease;
+  white-space: nowrap; /* Prevent text wrapping */
+}
+
+.buttonSmall:hover {
+  background-color: #4A52E8;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(46, 62, 223, 0.3);
+}
+
+.buttonSmall:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 8px rgba(46, 62, 223, 0.2);
+}
+
+.buttonSmall:disabled {
+  cursor: not-allowed;
+  opacity: 0.7;
+  transform: none;
+  box-shadow: none;
+}
+
+/* Secondary button variant (could be used for alternative actions) */
+.buttonSecondary {
+  width: 200px; /* Same as primary */
+  height: 48px;
+  padding: 12px 24px;
+  border-radius: 40px;
+  background-color: transparent;
+  border: 2px solid #2E3EDF;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  margin: 0 auto;
+  gap: 10px;
+  opacity: 1;
+  box-sizing: border-box;
+  transition: all 0.3s ease;
+  white-space: nowrap; /* Prevent text wrapping */
+}
+
+.buttonSecondary:hover {
+  background-color: #2E3EDF;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(46, 62, 223, 0.3);
+}
+
+.buttonSecondary:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 8px rgba(46, 62, 223, 0.2);
+}
+
+.buttonSecondary:disabled {
+  cursor: not-allowed;
+  opacity: 0.7;
+  transform: none;
+  box-shadow: none;
+}
+
+.buttonSecondary .buttonText {
+  color: #2E3EDF;
+}
+
+.buttonSecondary:hover .buttonText {
   color: #FFFFFF;
 }
