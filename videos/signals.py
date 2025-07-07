@@ -19,14 +19,15 @@ def video_created_or_updated(sender, instance, created, **kwargs):
     Signal triggered when a video is created or updated
     """
     if created:
-        logger.info(f'New video created: {instance.title} (ID: {instance.id}) by user {instance.user.email}')
+        logger.info(f'New video created: {instance.title} (ID: {instance.id})')
         
-        # Set initial processing status
-        instance.is_processed = False
-        instance.save(update_fields=['is_processed'])
+        # Set initial processing status if the field exists
+        if hasattr(instance, 'is_processed'):
+            instance.is_processed = False
+            instance.save(update_fields=['is_processed'])
         
         # Trigger background processing if video file exists
-        if instance.video_file:
+        if hasattr(instance, 'video_file') and instance.video_file:
             try:
                 # Queue video processing job
                 queue = get_queue('default')
@@ -71,15 +72,16 @@ def watch_progress_updated(sender, instance, created, **kwargs):
         logger.info(f'Watch progress started: User {instance.user.email} started watching {instance.video.title}')
     else:
         # Check if video was completed
-        progress_percentage = (instance.current_time.total_seconds() / instance.video.duration.total_seconds()) * 100
-        
-        if progress_percentage >= 90 and not getattr(instance, '_completion_logged', False):
-            logger.info(f'Video completed: User {instance.user.email} completed {instance.video.title}')
-            instance._completion_logged = True
+        if instance.video.duration and instance.video.duration.total_seconds() > 0:
+            progress_percentage = (instance.progress_seconds / instance.video.duration.total_seconds()) * 100
             
-        elif progress_percentage >= 50 and not getattr(instance, '_halfway_logged', False):
-            logger.info(f'Video halfway: User {instance.user.email} reached 50% of {instance.video.title}')
-            instance._halfway_logged = True
+            if progress_percentage >= 90 and not getattr(instance, '_completion_logged', False):
+                logger.info(f'Video completed: User {instance.user.email} completed {instance.video.title}')
+                instance._completion_logged = True
+                
+            elif progress_percentage >= 50 and not getattr(instance, '_halfway_logged', False):
+                logger.info(f'Video halfway: User {instance.user.email} reached 50% of {instance.video.title}')
+                instance._halfway_logged = True
 
 
 @receiver(post_save, sender=Genre)
