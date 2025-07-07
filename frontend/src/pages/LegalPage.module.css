@@ -102,19 +102,6 @@
   letter-spacing: 0.5px;
 }
 
-.footer {
-  width: 270px;
-  height: 43px;
-  position: absolute;
-  bottom: 20px;
-  left: 50%;
-  transform: translateX(-50%);
-  display: flex;
-  gap: 48px;
-  padding: 10px;
-  z-index: 3;
-}
-
 .header {
   width: 100%;
   max-width: 1440px;
