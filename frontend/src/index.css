@@ -12,8 +12,14 @@
   
   body {
     @apply font-sans antialiased;
-    overflow: hidden;
-    height: 100vh;
+    background-color: rgba(20, 20, 20, 1);
+    min-height: 100vh;
+  }
+
+  /* CSS Custom Properties for modern support */
+  :root {
+    --line-clamp-2: 2;
+    --line-clamp-3: 3;
   }
 }
 
