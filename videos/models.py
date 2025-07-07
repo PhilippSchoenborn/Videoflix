@@ -44,6 +44,14 @@ class Video(models.Model):
         ('1080p', '1080p'),
     ]
     
+    AGE_RATING_CHOICES = [
+        ('FSK 0', 'FSK 0'),
+        ('FSK 6', 'FSK 6'),
+        ('FSK 12', 'FSK 12'),
+        ('FSK 16', 'FSK 16'),
+        ('FSK 18', 'FSK 18'),
+    ]
+    
     title = models.CharField(
         max_length=200,
         help_text=_('Video title')
@@ -53,7 +61,14 @@ class Video(models.Model):
     )
     thumbnail = models.ImageField(
         upload_to='video_thumbnails/',
+        blank=True,
+        null=True,
         help_text=_('Video thumbnail image')
+    )
+    thumbnail_url = models.URLField(
+        blank=True,
+        null=True,
+        help_text=_('External thumbnail URL (used if no image file uploaded)')
     )
     genre = models.ForeignKey(
         Genre,
@@ -63,6 +78,12 @@ class Video(models.Model):
     )
     duration = models.DurationField(
         help_text=_('Video duration')
+    )
+    age_rating = models.CharField(
+        max_length=10,
+        choices=AGE_RATING_CHOICES,
+        default='FSK 16',
+        help_text=_('Age rating classification')
     )
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -144,6 +165,18 @@ class WatchProgress(models.Model):
     progress_seconds = models.PositiveIntegerField(
         default=0,
         help_text=_('Progress in seconds')
+    )
+    last_resolution = models.CharField(
+        max_length=10,
+        default='720p',
+        choices=[
+            ('120p', '120p'),
+            ('360p', '360p'),
+            ('480p', '480p'),
+            ('720p', '720p'),
+            ('1080p', '1080p'),
+        ],
+        help_text=_('Last used video resolution')
     )
     last_watched = models.DateTimeField(auto_now=True)
     completed = models.BooleanField(
