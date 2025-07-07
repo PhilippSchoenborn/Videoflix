@@ -228,3 +228,20 @@
     font-size: 12px;
   }
 }
+
+@media (max-width: 600px) {
+  .playerContainer {
+    width: 100vw;
+    height: 60vh;
+    max-width: 100vw;
+    border-radius: 0;
+  }
+  .closeButton, .qualitySelector {
+    top: 8px;
+    right: 8px;
+    left: 8px;
+    width: 36px;
+    height: 36px;
+    font-size: 18px;
+  }
+}

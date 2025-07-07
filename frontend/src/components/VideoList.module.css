@@ -191,6 +191,21 @@
   }
 }
 
+@media (max-width: 600px) {
+  .videoContainer {
+    gap: 8px;
+    padding: 4px 0;
+  }
+  .videoItem {
+    flex: 0 0 180px;
+    border-radius: 8px;
+  }
+  .title {
+    font-size: 18px;
+    padding-left: 0;
+  }
+}
+
 @media (max-width: 480px) {
   .videoItem {
     flex: 0 0 200px;

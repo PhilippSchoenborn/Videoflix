@@ -164,7 +164,7 @@ node_modules/
 !frontend/dist/
 
 # Ignore test and reference projects
-project.Videoflix-main/
+# project.Videoflix-main/
 
 # Ignore test documentation and markdown outputs
 /tests/VALIDATION_FEATURES.md

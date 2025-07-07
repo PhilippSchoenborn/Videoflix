@@ -5,6 +5,7 @@ import logoSvg from '../assets/Logo.svg';
 import styles from './Header.module.css';
 import Button from './Button';
 import LogoutButton from './LogoutButton';
+import BurgerMenu from './BurgerMenu';
 
 const Header: React.FC = () => {
   const location = useLocation();
@@ -18,13 +19,18 @@ const Header: React.FC = () => {
     <header className={styles.header}>
       <img src={logoSvg} alt="Videoflix Logo" />
       {!hideCTAButton && (
-        <div className={styles.rightSection}>
+        <div className={styles.headerRight}>
           {isAuthenticated ? (
             <LogoutButton />
           ) : (
-            <Link to="/login" className={styles.loginLink}>
-              <Button>Login</Button>
-            </Link>
+            <>
+              <div className={styles.rightSection + ' ' + styles.hideOnMobile}>
+                <Link to="/login" className={styles.loginLink}>
+                  <Button>Login</Button>
+                </Link>
+              </div>
+              <BurgerMenu />
+            </>
           )}
         </div>
       )}
