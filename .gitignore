@@ -161,6 +161,18 @@ htmlcov/
 
 # Node.js (if using)
 node_modules/
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
+!frontend/dist/
+
+# Ignore test and reference projects
+project.Videoflix-main/
+
+# Ignore test documentation and markdown outputs
+/tests/VALIDATION_FEATURES.md
+
+# Ignore all test files and folders
+/tests/
+**/tests/
+**/test_*.py
+**/tests_*.py
+
+
