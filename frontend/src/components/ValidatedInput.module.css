@@ -1,0 +1,158 @@
+.inputRow {
+  position: relative;
+  display: flex;
+  align-items: center;
+  background-color: rgba(53, 56, 62, 0.5);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: 8px;
+  padding: 16px;
+  gap: 16px;
+  transition: border-color 0.3s ease;
+}
+
+.inputRow:focus-within,
+.inputRow:has(input:focus) {
+  border-color: #2E3EDF !important;
+}
+
+._inputRow_c1ked:focus-within,
+._inputRow_c1ked:has(input:focus) {
+  border-color: #2E3EDF !important;
+}
+
+.inputRowError {
+  border-color: #e74c3c !important;
+}
+
+.inputIcon {
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+}
+
+.inputField {
+  background: transparent;
+  border: none;
+  outline: none;
+  color: white;
+  font-size: 16px;
+  flex: 1;
+  font-family: inherit;
+}
+
+.inputField::placeholder {
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.inputField:focus {
+  outline: none;
+}
+
+.inputFieldPassword {
+  padding-right: 40px;
+}
+
+.inputFieldError {
+  color: #ffcccb;
+}
+
+.visibilityIcon {
+  width: 20px;
+  height: 20px;
+  cursor: pointer;
+  opacity: 0.7;
+  transition: opacity 0.3s ease;
+  flex-shrink: 0;
+  position: absolute;
+  right: 16px;
+}
+
+.visibilityIcon:hover {
+  opacity: 1;
+}
+
+.errorContainer {
+  margin-top: 0;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .inputRow {
+    padding: 14px;
+    gap: 12px;
+  }
+  
+  .inputField {
+    font-size: 14px;
+  }
+  
+  .inputIcon,
+  .visibilityIcon {
+    width: 18px;
+    height: 18px;
+  }
+  
+  .visibilityIcon {
+    right: 14px;
+  }
+}
+
+@media (max-width: 480px) {
+  .inputRow {
+    padding: 12px;
+    gap: 10px;
+  }
+  
+  .inputField {
+    font-size: 13px;
+  }
+  
+  .inputIcon,
+  .visibilityIcon {
+    width: 16px;
+    height: 16px;
+  }
+  
+  .visibilityIcon {
+    right: 12px;
+  }
+}
+
+/* Landing page variant with different styling */
+.inputRowLanding {
+  width: 360px;
+  height: 48px;
+  padding: 12px 24px;
+  border-radius: 40px;
+  background: #1C1A20CC;
+  border: 1px solid #FFFFFF;
+  display: flex;
+  align-items: center;
+  opacity: 1;
+  box-sizing: border-box;
+  flex-shrink: 0;
+  position: relative;
+  gap: 16px;
+  transition: border-color 0.3s ease;
+}
+
+.inputRowLanding:focus-within {
+  border-color: #2E3EDF;
+}
+
+.inputRowLanding .inputField {
+  background: transparent;
+  border: none;
+  outline: none;
+  color: white;
+  font-size: 18px;
+  flex: 1;
+  font-family: 'DM Sans', sans-serif;
+  font-weight: 400;
+  line-height: 100%;
+  letter-spacing: 0%;
+}
+
+.inputRowLanding .inputField::placeholder {
+  color: rgba(255, 255, 255, 0.7);
+}
