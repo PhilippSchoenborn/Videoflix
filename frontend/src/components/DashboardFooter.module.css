@@ -1,0 +1,78 @@
+.footer {
+  width: 100%;
+  padding: 20px 48px;
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  background-color: rgba(20, 20, 20, 1);
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  margin-top: auto;
+}
+
+.footerContent {
+  width: 100%;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.footerLinks {
+  display: flex;
+  gap: 48px;
+  align-items: center;
+}
+
+.footerLink {
+  font-family: 'DM Sans', sans-serif;
+  font-weight: 500;
+  font-size: 18px;
+  line-height: 100%;
+  letter-spacing: 0%;
+  color: #FFFFFF;
+  text-decoration: none;
+  transition: color 0.3s ease;
+}
+
+.footerLink:hover {
+  color: #E50914;
+}
+
+/* Responsive adjustments for Dashboard Footer */
+@media (max-width: 1024px) {
+  .footer {
+    padding: 20px 24px;
+  }
+}
+
+@media (max-width: 768px) {
+  .footer {
+    padding: 16px;
+    justify-content: center;
+  }
+  
+  .footerContent {
+    justify-content: center;
+  }
+  
+  .footerLinks {
+    gap: 32px;
+  }
+  
+  .footerLink {
+    font-size: 16px;
+  }
+}
+
+@media (max-width: 480px) {
+  .footerLinks {
+    flex-direction: column;
+    gap: 16px;
+  }
+  
+  .footer {
+    padding: 20px 16px;
+  }
+  
+  .footerLink {
+    font-size: 14px;
+  }
+}
