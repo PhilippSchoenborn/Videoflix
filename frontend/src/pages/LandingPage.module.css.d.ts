@@ -9,6 +9,7 @@ declare const styles: {
   readonly emailGroup: string;
   readonly inputRow: string;
   readonly inputField: string;
+  readonly getStartedButton: string;
   readonly loginLink: string;
 };
 
