@@ -31,7 +31,7 @@ urlpatterns = [
     
     # Video streaming endpoints
     path('<int:video_id>/stream/<str:quality>/', video_stream_view, name='video_stream'),
-    
+    path('<int:video_id>/qualities/', video_quality_options_view, name='video_qualities'),
     # Watch progress endpoints
     path('progress/', WatchProgressListView.as_view(), name='watch_progress_list'),
     path('<int:video_id>/progress/', WatchProgressUpdateView.as_view(), name='watch_progress_update'),

@@ -151,11 +151,11 @@ class TestUserRegistration(APITestCase):
             username='existing',
             password='pass123'
         )
-        
+
         response = self.client.post(self.registration_url, self.valid_data)
-        
+
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-        self.assertIn('check your inputs', str(response.data))
+        self.assertIn('email', str(response.data))
     
     def test_password_mismatch(self):
         """
@@ -263,32 +263,30 @@ class TestEmailVerification(TestCase):
         """
         Test email verification with valid token
         """
+        from django.utils.http import urlsafe_base64_encode
+        from django.utils.encoding import force_bytes
         token = create_verification_token(self.user)
-        url = reverse('authentication:verify_email', kwargs={'token': token})
-        
+        uidb64 = urlsafe_base64_encode(force_bytes(self.user.pk))
+        url = reverse('authentication:activate', kwargs={'uidb64': uidb64, 'token': token})
         from django.test import Client
         client = Client()
         response = client.get(url)
-        
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        
-        # Refresh user from database
         self.user.refresh_from_db()
         self.assertTrue(self.user.is_email_verified)
-        
-        # Token should be deleted
         self.assertFalse(EmailVerificationToken.objects.filter(user=self.user).exists())
-    
+
     def test_verify_email_with_invalid_token(self):
         """
         Test email verification with invalid token
         """
-        url = reverse('authentication:verify_email', kwargs={'token': 'invalid-token'})
-        
+        from django.utils.http import urlsafe_base64_encode
+        from django.utils.encoding import force_bytes
+        uidb64 = urlsafe_base64_encode(force_bytes(self.user.pk))
+        url = reverse('authentication:activate', kwargs={'uidb64': uidb64, 'token': 'invalid-token'})
         from django.test import Client
         client = Client()
         response = client.get(url)
-        
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
 
@@ -304,10 +302,12 @@ class TestPasswordReset(APITestCase):
         self.user = User.objects.create_user(
             email='test@example.com',
             username='testuser',
-            password='oldpass123'
+            password='testpass123'
         )
+        self.invalid_payload = {'password': 'NewPassword123!', 'password_confirm': 'WrongPassword!'}
         self.reset_request_url = reverse('authentication:password_reset_request')
-        self.reset_url = reverse('authentication:password_reset')
+        # Korrigiere: password_reset benötigt kwargs
+        self.reset_url = reverse('authentication:password_reset', kwargs={'uidb64': 'dummy', 'token': 'dummy'})
     
     def test_password_reset_request(self):
         """
@@ -368,3 +368,11 @@ class TestPasswordReset(APITestCase):
         })
         
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+    
+    def test_password_reset_passwords_mismatch(self):
+        """Unhappy Path: Passwords do not match"""
+        payload = self.invalid_payload.copy()
+        payload['token'] = 'dummy-token'
+        response = self.client.post(self.url, payload, format='json')
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertIn('non_field_errors', response.data)

@@ -114,46 +114,41 @@ def video_stream_view(request, video_id, quality):
     """
     Stream video file with specific quality - No authentication required for video streaming
     """
-    from django.http import HttpResponseRedirect, Http404, JsonResponse
-    from django.views.decorators.csrf import csrf_exempt
-    from django.utils.decorators import method_decorator
+    from django.http import HttpResponseRedirect, Http404, FileResponse
     import os
-    
-    try:
-        video = Video.objects.get(id=video_id)
-    except Video.DoesNotExist:
-        raise Http404("Video not found")
-    
-    # Get video file for requested quality
-    video_file = video.video_files.filter(quality=quality).first()
-    
-    if not video_file:
-        # Fallback to default quality
-        default_quality = video.get_default_quality()
-        if default_quality:
-            video_file = video.video_files.filter(quality=default_quality).first()
-    
+
+    def get_video_or_404(video_id):
+        try:
+            return Video.objects.get(id=video_id)
+        except Video.DoesNotExist:
+            raise Http404("Video not found")
+
+    def get_video_file(video, quality):
+        video_file = video.video_files.filter(quality=quality).first()
+        if not video_file:
+            default_quality = video.get_default_quality()
+            if default_quality:
+                video_file = video.video_files.filter(quality=default_quality).first()
+        return video_file
+
+    video = get_video_or_404(video_id)
+    video_file = get_video_file(video, quality)
+
     if not video_file or not video_file.file:
         raise Http404("Video file not found")
-    
-    # Check if this is a URL or local file
+
     file_path = str(video_file.file)
     if file_path.startswith('http://') or file_path.startswith('https://'):
-        # External URL - redirect to the URL
         return HttpResponseRedirect(file_path)
     else:
-        # Local file - serve it directly
-        from django.http import FileResponse
         if not os.path.exists(video_file.file.path):
             raise Http404("Video file not found on disk")
-        
         response = FileResponse(
             open(video_file.file.path, 'rb'),
             content_type='video/mp4'
         )
         response['Content-Length'] = video_file.file.size
         response['Accept-Ranges'] = 'bytes'
-        
         return response
 
 

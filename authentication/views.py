@@ -101,25 +101,20 @@ def user_logout_view(request):
 
 @api_view(['GET'])
 @permission_classes([permissions.AllowAny])
-def verify_email_view(request, token):
+def verify_email_view(request, uidb64, token):
     """
     Email verification endpoint
     """
     try:
         verification_token = EmailVerificationToken.objects.get(token=token)
-        
         user = verification_token.user
         user.is_email_verified = True
         user.save()
-        
-        # Delete the verification token
         verification_token.delete()
-        
         return Response(
             {'message': 'Email verified successfully'},
             status=status.HTTP_200_OK
         )
-    
     except EmailVerificationToken.DoesNotExist:
         return Response(
             {'error': 'Invalid verification token'},

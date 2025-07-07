@@ -143,9 +143,7 @@ class PasswordResetSerializer(serializers.Serializer):
         password_confirm = attrs.get('password_confirm')
         
         if password != password_confirm:
-            raise serializers.ValidationError(
-                "Password confirmation does not match."
-            )
+            raise serializers.ValidationError({'non_field_errors': ['Password confirmation does not match.']})
         
         # Validate password strength
         is_valid, error_message = validate_password_strength(password)

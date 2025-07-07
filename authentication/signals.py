@@ -20,16 +20,15 @@ def create_user_profile_actions(sender, instance, created, **kwargs):
     """
     if created:
         logger.info(f'New user created: {instance.email} (ID: {instance.id})')
-        
-        # Create email verification token automatically
+        # Ensure no duplicate token and always generate a unique token
         try:
-            verification_token = EmailVerificationToken.objects.create(user=instance)
+            EmailVerificationToken.objects.filter(user=instance).delete()
+            from .utils import generate_verification_token
+            token = generate_verification_token()
+            verification_token = EmailVerificationToken.objects.create(user=instance, token=token)
             logger.info(f'Email verification token created for user {instance.email}')
-            
-            # Send welcome email (in production, this should be handled by a background task)
             if settings.DEBUG:
                 print(f'Welcome email would be sent to {instance.email}')
-            
         except Exception as e:
             logger.error(f'Error creating verification token for user {instance.email}: {str(e)}')
 

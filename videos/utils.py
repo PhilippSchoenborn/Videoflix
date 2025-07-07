@@ -7,6 +7,9 @@ from datetime import timedelta
 from django.conf import settings
 from django.core.files.base import ContentFile
 from .models import Video, VideoFile
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 def get_video_duration(file_path):
@@ -18,7 +21,7 @@ def get_video_duration(file_path):
         duration = float(probe['streams'][0]['duration'])
         return timedelta(seconds=duration)
     except Exception as e:
-        print(f"Error getting video duration: {e}")
+        logger.error(f"Error getting video duration: {e}")
         return timedelta(0)
 
 
@@ -36,7 +39,7 @@ def generate_thumbnail(video_file_path, output_path, timestamp='00:00:01'):
         )
         return True
     except Exception as e:
-        print(f"Error generating thumbnail: {e}")
+        logger.error(f"Error generating thumbnail: {e}")
         return False
 
 
@@ -74,7 +77,7 @@ def convert_video_quality(input_path, output_path, quality):
         )
         return True
     except Exception as e:
-        print(f"Error converting video to {quality}: {e}")
+        logger.error(f"Error converting video to {quality}: {e}")
         return False
 
 
@@ -88,7 +91,7 @@ def process_video_upload(video_id):
         # Find the original uploaded file
         original_file = video.video_files.filter(is_processed=False).first()
         if not original_file:
-            print(f"No unprocessed file found for video {video_id}")
+            logger.warning(f"No unprocessed file found for video {video_id}")
             return
         
         original_path = original_file.file.path
@@ -151,12 +154,12 @@ def process_video_upload(video_id):
         original_file.is_processed = True
         original_file.save()
         
-        print(f"Video {video_id} processed successfully")
+        logger.info(f"Video {video_id} processed successfully")
         
     except Video.DoesNotExist:
-        print(f"Video with id {video_id} not found")
+        logger.error(f"Video with id {video_id} not found")
     except Exception as e:
-        print(f"Error processing video {video_id}: {e}")
+        logger.error(f"Error processing video {video_id}: {e}")
 
 
 def cleanup_temp_files(video_id):
@@ -170,7 +173,7 @@ def cleanup_temp_files(video_id):
             import shutil
             shutil.rmtree(temp_dir)
     except Exception as e:
-        print(f"Error cleaning up temp files for video {video_id}: {e}")
+        logger.error(f"Error cleaning up temp files for video {video_id}: {e}")
 
 
 def get_video_quality_recommendations(user_agent=None):
