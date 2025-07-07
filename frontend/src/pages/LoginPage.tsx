@@ -1,34 +1,110 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { useFormValidation, LOGIN_VALIDATION_CONFIG } from '../hooks/useFormValidation';
+import { useToastContext } from '../context/ToastContext';
 import mailSvg from '../assets/mail.svg';
 import passwordSvg from '../assets/password.svg';
-import visibilitySvg from '../assets/visibility.svg';
 import styles from './LoginPage.module.css';
 import Button from '../components/Button';
+import ValidatedInput from '../components/ValidatedInput';
 import logoSvg from '../assets/Logo.svg';
 import BackgroundImage from '../components/BackgroundImage';
+import Footer from '../components/Footer';
 
 export default function LoginPage() {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [showPassword, setShowPassword] = useState(false);
+  const [formData, setFormData] = useState({
+    email: '',
+    password: ''
+  });
   const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState('');
+  const [serverError, setServerError] = useState('');
 
   const { login } = useAuth();
   const navigate = useNavigate();
+  const { showToast } = useToastContext();
+  const { validationState, validateField, validateForm, clearAllErrors } = useFormValidation(LOGIN_VALIDATION_CONFIG);
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({
+      ...prev,
+      [name]: value
+    }));
+    
+    // Clear server error when user starts typing
+    if (serverError) {
+      setServerError('');
+    }
+  };
+
+  const handleBlur = (e: React.FocusEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    validateField(name, value, formData);
+  };
+
+  const extractErrorMessages = (errorData: any): string[] => {
+    const messages: string[] = [];
+    
+    if (typeof errorData === 'string') {
+      return [errorData];
+    }
+    
+    if (Array.isArray(errorData)) {
+      return errorData.flat();
+    }
+    
+    if (typeof errorData === 'object' && errorData !== null) {
+      Object.values(errorData).forEach(value => {
+        if (Array.isArray(value)) {
+          messages.push(...value);
+        } else if (typeof value === 'string') {
+          messages.push(value);
+        } else if (typeof value === 'object' && value !== null) {
+          messages.push(...extractErrorMessages(value));
+        }
+      });
+    }
+    
+    return messages;
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError('');
-    setIsLoading(true);
+    setServerError('');
+    clearAllErrors();
 
+    // Validate form
+    if (!validateForm(formData)) {
+      showToast('Please correct the errors in the form', 'error');
+      return;
+    }
+
+    setIsLoading(true);
     try {
-      await login({ email, password });
+      await login({ email: formData.email, password: formData.password });
+      showToast('Login successful!', 'success');
       navigate('/dashboard');
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Login failed');
+    } catch (err: any) {
+      console.error('Login error:', err);
+      
+      // Handle different types of errors
+      if (err.response?.data) {
+        const errorMessages = extractErrorMessages(err.response.data);
+        if (errorMessages.length > 0) {
+          setServerError(errorMessages.join('. '));
+          showToast(errorMessages.join('. '), 'error');
+        } else {
+          setServerError('Invalid email or password');
+          showToast('Invalid email or password', 'error');
+        }
+      } else if (err.message) {
+        setServerError(err.message);
+        showToast(err.message, 'error');
+      } else {
+        setServerError('Login failed. Please try again.');
+        showToast('Login failed. Please try again.', 'error');
+      }
     } finally {
       setIsLoading(false);
     }
@@ -48,9 +124,9 @@ export default function LoginPage() {
         </header>
 
         {/* Error Message */}
-        {error && (
+        {serverError && (
           <div className={styles.error}>
-            {error}
+            {serverError}
           </div>
         )}
 
@@ -64,35 +140,36 @@ export default function LoginPage() {
                 {/* Input Fields Container */}
                 <div className={styles.inputGroup}>
                   {/* Email Input */}
-                  <div className={styles.inputRow}>
-                    <img src={mailSvg} alt="Mail" className={styles.inputIcon} />
-                    <input
-                      type="email"
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
-                      placeholder="Email Address"
-                      required
-                      className={styles.inputField}
-                    />
-                  </div>
+                  <ValidatedInput
+                    type="email"
+                    name="email"
+                    value={formData.email}
+                    onChange={handleChange}
+                    onBlur={handleBlur}
+                    placeholder="Email Address"
+                    icon={mailSvg}
+                    iconAlt="Mail"
+                    required
+                    hasError={validationState.email?.hasError}
+                    errorMessage={validationState.email?.errorMessage}
+                    autoComplete="username"
+                  />
                   {/* Password Input */}
-                  <div className={styles.inputRow}>
-                    <img src={passwordSvg} alt="Password" className={styles.inputIcon} />
-                    <input
-                      type={showPassword ? 'text' : 'password'}
-                      value={password}
-                      onChange={(e) => setPassword(e.target.value)}
-                      placeholder="Password"
-                      required
-                      className={`${styles.inputField} ${styles.inputFieldPassword}`}
-                    />
-                    <img 
-                      src={visibilitySvg} 
-                      alt="Toggle visibility" 
-                      className={styles.visibilityIcon}
-                      onClick={() => setShowPassword(!showPassword)}
-                    />
-                  </div>
+                  <ValidatedInput
+                    type="password"
+                    name="password"
+                    value={formData.password}
+                    onChange={handleChange}
+                    onBlur={handleBlur}
+                    placeholder="Password"
+                    icon={passwordSvg}
+                    iconAlt="Password"
+                    required
+                    hasError={validationState.password?.hasError}
+                    errorMessage={validationState.password?.errorMessage}
+                    autoComplete="current-password"
+                    showPasswordToggle
+                  />
                 </div>
                 {/* Bottom Container */}
                 <div className={styles.bottomGroup}>
@@ -130,21 +207,7 @@ export default function LoginPage() {
           </form>
         </div>
 
-        {/* Footer Links */}
-        <div className={styles.footer}>
-          <Link
-            to="/datenschutz"
-            className={styles.footerLink}
-          >
-            Datenschutz
-          </Link>
-          <Link
-            to="/impressum"
-            className={styles.footerLink}
-          >
-            Impressum
-          </Link>
-        </div>
+        <Footer />
       </div>
     </BackgroundImage>
   );
