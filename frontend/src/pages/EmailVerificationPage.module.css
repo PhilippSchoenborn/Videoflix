@@ -1,0 +1,197 @@
+/* EmailVerificationPage.module.css */
+
+.container {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background: linear-gradient(135deg, rgba(0, 0, 0, 0.8) 0%, rgba(0, 0, 0, 0.9) 100%);
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1.5rem 2rem;
+  position: relative;
+  z-index: 10;
+}
+
+.header img {
+  height: 2.5rem;
+  width: auto;
+}
+
+.backToHomeButton {
+  background: transparent;
+  border: 1px solid #e50914;
+  color: white;
+  padding: 0.5rem 1rem;
+  border-radius: 4px;
+  text-decoration: none;
+  font-weight: 500;
+  transition: all 0.3s ease;
+}
+
+.backToHomeButton:hover {
+  background: #e50914;
+  color: white;
+}
+
+.body {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+}
+
+.verificationBox {
+  background: rgba(0, 0, 0, 0.75);
+  border-radius: 8px;
+  padding: 3rem;
+  width: 100%;
+  max-width: 500px;
+  text-align: center;
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.content {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.title {
+  font-size: 2rem;
+  font-weight: 700;
+  margin: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  line-height: 1.2;
+}
+
+.title.processing {
+  color: #fbbf24;
+}
+
+.title.success {
+  color: #10b981;
+}
+
+.title.error {
+  color: #ef4444;
+}
+
+.message {
+  color: rgba(255, 255, 255, 0.9);
+  font-size: 1.1rem;
+  line-height: 1.6;
+  margin: 0;
+}
+
+.redirectMessage {
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 0.9rem;
+  font-style: italic;
+  margin: 0;
+}
+
+.actions {
+  display: flex;
+  justify-content: center;
+  margin-top: 1rem;
+}
+
+.loginButton {
+  width: 200px; /* Reduced from 408px */
+  height: 48px;
+  background: #2E3EDF;
+  color: white;
+  border: none;
+  border-radius: 40px;
+  padding: 12px 24px;
+  font-family: 'DM Sans', sans-serif;
+  font-weight: 700;
+  font-size: 18px;
+  text-decoration: none;
+  transition: all 0.3s ease;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto;
+  white-space: nowrap; /* Prevent text wrapping */
+}
+
+.loginButton:hover {
+  background-color: #4A52E8; /* Same hover color as other buttons */
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(46, 62, 223, 0.3); /* Same shadow */
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .header {
+    padding: 1rem;
+  }
+  
+  .header img {
+    height: 2rem;
+  }
+  
+  .verificationBox {
+    padding: 2rem;
+    margin: 1rem;
+  }
+  
+  .title {
+    font-size: 1.5rem;
+    flex-direction: column;
+    gap: 0.25rem;
+  }
+  
+  .message {
+    font-size: 1rem;
+  }
+  
+  .backToHomeButton {
+    padding: 0.4rem 0.8rem;
+    font-size: 0.9rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .body {
+    padding: 1rem;
+  }
+  
+  .verificationBox {
+    padding: 1.5rem;
+  }
+  
+  .title {
+    font-size: 1.25rem;
+  }
+  
+  .loginButton {
+    padding: 0.6rem 1.5rem;
+    font-size: 0.9rem;
+  }
+}
+
+/* Loading Animation */
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+.title.processing {
+  animation: pulse 2s ease-in-out infinite;
+}
