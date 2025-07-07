@@ -85,18 +85,19 @@
 }
 
 .form {
-  width: 520px;
-  height: 466px;
   display: flex;
+  flex-direction: column;
   align-items: center;
-  justify-content: center;
+  gap: 16px;
+  width: 100%;
+  max-width: 500px;
 }
 
 .formBox {
-  width: 520px;
-  height: 466px;
-  padding: 43px 56px;
-  border-radius: 48px;
+  width: 100%;
+  max-width: 500px;
+  padding: 48px;
+  border-radius: 24px;
   background-color: #1B1B22D9;
   display: flex;
   flex-direction: column;
@@ -104,6 +105,11 @@
   box-sizing: border-box;
   align-items: center;
   justify-content: center;
+  background: rgba(28, 26, 32, 0.8);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: 24px;
+  padding: 48px;
+  backdrop-filter: blur(10px);
 }
 
 .title {
@@ -119,48 +125,8 @@
 .inputGroup {
   display: flex;
   flex-direction: column;
-  gap: 16px;
-}
-
-.inputRow {
-  width: 408px;
-  height: 48px;
-  padding: 12px 24px;
-  border-radius: 12px;
-  background-color: #1C1A20CC;
-  border: 1px solid #2E3EDF;
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-
-.inputIcon {
-  width: 24px;
-  height: 24px;
-}
-
-.inputField {
-  width: 324px;
-  height: 23px;
-  font-family: 'DM Sans', sans-serif;
-  font-weight: 400;
-  font-size: 18px;
-  line-height: 100%;
-  letter-spacing: 0%;
-  color: #D3D3D3;
-  background-color: transparent;
-  border: none;
-  outline: none;
-}
-
-.inputFieldPassword {
-  width: 288px;
-}
-
-.visibilityIcon {
-  width: 24px;
-  height: 24px;
-  cursor: pointer;
+  gap: 24px;
+  width: 100%;
 }
 
 .bottomGroup {
@@ -172,7 +138,7 @@
 }
 
 .loginButton {
-  width: 408px;
+  width: 200px; /* Reduced from 408px */
   height: 48px;
   border-radius: 40px;
   background-color: #2E3EDF;
@@ -182,11 +148,26 @@
   justify-content: center;
   cursor: pointer;
   margin: 0 auto;
+  transition: all 0.3s ease;
+  white-space: nowrap; /* Prevent text wrapping */
+}
+
+.loginButton:hover {
+  background-color: #4A52E8; /* Lighter blue on hover */
+  transform: translateY(-2px); /* Subtle lift effect */
+  box-shadow: 0 4px 12px rgba(46, 62, 223, 0.3); /* Blue shadow */
+}
+
+.loginButton:active {
+  transform: translateY(0); /* Reset transform on click */
+  box-shadow: 0 2px 8px rgba(46, 62, 223, 0.2); /* Reduced shadow */
 }
 
 .loginButton:disabled {
   cursor: not-allowed;
   opacity: 0.7;
+  transform: none; /* No hover effects when disabled */
+  box-shadow: none;
 }
 
 .loginButtonText {
@@ -239,29 +220,6 @@
 .signUpLink {
   font-family: 'DM Sans', sans-serif;
   font-weight: 700;
-  font-size: 18px;
-  line-height: 100%;
-  letter-spacing: 0%;
-  color: #FFFFFF;
-  text-decoration: none;
-}
-
-.footer {
-  width: 270px;
-  height: 43px;
-  position: absolute;
-  bottom: 20px;
-  left: 50%;
-  transform: translateX(-50%);
-  display: flex;
-  gap: 48px;
-  padding: 10px;
-  z-index: 3;
-}
-
-.footerLink {
-  font-family: 'DM Sans', sans-serif;
-  font-weight: 500;
   font-size: 18px;
   line-height: 100%;
   letter-spacing: 0%;
