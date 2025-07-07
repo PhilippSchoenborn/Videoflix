@@ -164,7 +164,7 @@ class VideosSignalsTest(TestCase):
             WatchProgress.objects.create(
                 user=self.user,
                 video=video,
-                current_time=timedelta(minutes=2)
+                progress_seconds=120  # 2 minutes in seconds
             )
             
         self.assertIn(f'Watch progress started: User {self.user.email} started watching', log.output[0])
