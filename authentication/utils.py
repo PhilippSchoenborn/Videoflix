@@ -36,6 +36,8 @@ def send_verification_email(user, verification_token):
     """
     Send email verification email to user
     """
+    print(f"Verification email would be sent to {user.email} with token: {verification_token}")
+    
     subject = 'Verify your Videoflix account'
     verification_link = f"{settings.FRONTEND_URL}/verify-email/{verification_token}"
     
@@ -45,14 +47,17 @@ def send_verification_email(user, verification_token):
     })
     plain_message = strip_tags(html_message)
     
-    send_mail(
-        subject=subject,
-        message=plain_message,
-        from_email=settings.DEFAULT_FROM_EMAIL,
-        recipient_list=[user.email],
-        html_message=html_message,
-        fail_silently=False,
-    )
+    print("=" * 50)
+    print("VERIFICATION EMAIL")
+    print("=" * 50)
+    print(f"To: {user.email}")
+    print(f"Subject: {subject}")
+    print(f"Verification Link: {verification_link}")
+    print("-" * 50)
+    print(plain_message)
+    print("=" * 50)
+    
+    print("Email sent successfully via console output!")
 
 
 def create_password_reset_token(user):
