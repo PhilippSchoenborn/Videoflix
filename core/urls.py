@@ -23,11 +23,10 @@ from . import views
 urlpatterns = [
     path('admin/', admin.site.urls),
     
-    # API endpoints
-    path('api/auth/', include('authentication.urls')),
-    path('api/videos/', include('videos.urls')),
+    # API endpoints direkt unter /api/
+    path('api/', include('authentication.urls')),  # Alle Auth-Endpoints direkt unter /api/
+    path('api/videos/', include('videos.urls')),             # Video-API
     path('api/health/', views.health_check, name='health_check'),
-    path('api/', views.api_info, name='api_info'),
     
     # Legal pages
     path('impressum/', views.impressum, name='impressum'),

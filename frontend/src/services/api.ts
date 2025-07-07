@@ -55,7 +55,7 @@ class ApiService {
 
   // Authentication Methods
   async login(credentials: LoginCredentials): Promise<AuthResponse> {
-    const response = await this.api.post<AuthResponse>('/auth/login/', credentials);
+    const response = await this.api.post<AuthResponse>('/login/', credentials);
     if (response.data.token) {
       localStorage.setItem('auth_token', response.data.token);
     }
@@ -63,7 +63,7 @@ class ApiService {
   }
 
   async register(data: RegisterData): Promise<AuthResponse> {
-    const response = await this.api.post<AuthResponse>('/auth/register/', data);
+    const response = await this.api.post<AuthResponse>('/register/', data);
     if (response.data.token) {
       localStorage.setItem('auth_token', response.data.token);
     }
@@ -72,34 +72,34 @@ class ApiService {
 
   async logout(): Promise<void> {
     try {
-      await this.api.post('/auth/logout/');
+      await this.api.post('/logout/');
     } finally {
       localStorage.removeItem('auth_token');
     }
   }
 
   async requestPasswordReset(data: PasswordResetRequest): Promise<{ message: string }> {
-    const response = await this.api.post('/auth/password-reset/request/', data);
+    const response = await this.api.post('/password_reset/', data);
     return response.data;
   }
 
-  async resetPassword(data: PasswordReset): Promise<{ message: string }> {
-    const response = await this.api.post('/auth/password-reset/', data);
+  async resetPassword(uidb64: string, token: string, data: PasswordReset): Promise<{ message: string }> {
+    const response = await this.api.post(`/password_confirm/${uidb64}/${token}/`, data);
     return response.data;
   }
 
-  async verifyEmail(token: string): Promise<{ message: string }> {
-    const response = await this.api.get(`/auth/verify-email/${token}/`);
+  async activateAccount(uidb64: string, token: string): Promise<{ message: string }> {
+    const response = await this.api.get(`/activate/${uidb64}/${token}/`);
     return response.data;
   }
 
   async getUserProfile(): Promise<User> {
-    const response = await this.api.get<User>('/auth/profile/');
+    const response = await this.api.get<User>('/profile/');
     return response.data;
   }
 
   async updateUserProfile(data: Partial<User>): Promise<User> {
-    const response = await this.api.patch<User>('/auth/profile/', data);
+    const response = await this.api.patch<User>('/profile/', data);
     return response.data;
   }
 
