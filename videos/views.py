@@ -76,9 +76,15 @@ class FeaturedVideosView(generics.ListAPIView):
     
     def get_queryset(self):
         """
-        Return only featured videos
+        Return featured videos, or first 5 videos if none are featured
         """
-        return Video.objects.filter(is_featured=True)
+        featured_videos = Video.objects.filter(is_featured=True)
+        
+        # If no videos are marked as featured, return first 5 videos
+        if not featured_videos.exists():
+            return Video.objects.all()[:5]
+        
+        return featured_videos
 
 
 class VideoUploadView(generics.CreateAPIView):
@@ -101,13 +107,22 @@ class VideoUploadView(generics.CreateAPIView):
         return video
 
 
-@api_view(['GET'])
-@permission_classes([permissions.IsAuthenticated])
+from django.views.decorators.csrf import csrf_exempt
+
+@csrf_exempt
 def video_stream_view(request, video_id, quality):
     """
-    Stream video file with specific quality
+    Stream video file with specific quality - No authentication required for video streaming
     """
-    video = get_object_or_404(Video, id=video_id)
+    from django.http import HttpResponseRedirect, Http404, JsonResponse
+    from django.views.decorators.csrf import csrf_exempt
+    from django.utils.decorators import method_decorator
+    import os
+    
+    try:
+        video = Video.objects.get(id=video_id)
+    except Video.DoesNotExist:
+        raise Http404("Video not found")
     
     # Get video file for requested quality
     video_file = video.video_files.filter(quality=quality).first()
@@ -118,17 +133,28 @@ def video_stream_view(request, video_id, quality):
         if default_quality:
             video_file = video.video_files.filter(quality=default_quality).first()
     
-    if not video_file:
-        return Response(
-            {'error': 'Video file not available'},
-            status=status.HTTP_404_NOT_FOUND
-        )
+    if not video_file or not video_file.file:
+        raise Http404("Video file not found")
     
-    return Response({
-        'video_url': video_file.file.url,
-        'quality': video_file.quality,
-        'file_size': video_file.file_size
-    })
+    # Check if this is a URL or local file
+    file_path = str(video_file.file)
+    if file_path.startswith('http://') or file_path.startswith('https://'):
+        # External URL - redirect to the URL
+        return HttpResponseRedirect(file_path)
+    else:
+        # Local file - serve it directly
+        from django.http import FileResponse
+        if not os.path.exists(video_file.file.path):
+            raise Http404("Video file not found on disk")
+        
+        response = FileResponse(
+            open(video_file.file.path, 'rb'),
+            content_type='video/mp4'
+        )
+        response['Content-Length'] = video_file.file.size
+        response['Accept-Ranges'] = 'bytes'
+        
+        return response
 
 
 @api_view(['GET'])
@@ -204,6 +230,16 @@ class WatchProgressUpdateView(generics.CreateAPIView, generics.UpdateAPIView):
         watch_progress = self.get_object()
         serializer = self.get_serializer(watch_progress, data=request.data)
         serializer.is_valid(raise_exception=True)
+        
+        # Auto-set completed if video is watched to >=90%
+        progress_seconds = serializer.validated_data.get('progress_seconds', 0)
+        if watch_progress.video.duration and progress_seconds > 0:
+            total_seconds = watch_progress.video.duration.total_seconds()
+            if total_seconds > 0:
+                progress_percentage = (progress_seconds / total_seconds) * 100
+                if progress_percentage >= 90:
+                    serializer.validated_data['completed'] = True
+        
         serializer.save()
         
         return Response(serializer.data, status=status.HTTP_200_OK)
@@ -219,12 +255,16 @@ def videos_by_genre_view(request):
     result = []
     
     for genre in genres:
-        videos = genre.videos.all()[:10]  # Limit to 10 videos per genre
-        genre_data = {
-            'genre': GenreSerializer(genre).data,
-            'videos': VideoListSerializer(videos, many=True).data
-        }
-        result.append(genre_data)
+        videos_queryset = genre.videos.all()
+        if videos_queryset.exists():  # Only include genres that have videos
+            videos = videos_queryset[:10]  # Limit to 10 videos per genre
+            genre_data = {
+                'id': genre.id,
+                'name': genre.name,
+                'description': genre.description,
+                'videos': VideoListSerializer(videos, many=True).data
+            }
+            result.append(genre_data)
     
     return Response(result)
 
@@ -233,13 +273,15 @@ def videos_by_genre_view(request):
 @permission_classes([permissions.IsAuthenticated])
 def continue_watching_view(request):
     """
-    Get videos user can continue watching
+    Get videos user can continue watching (not completed and progress > 0)
     """
+    # Get all watch progress with progress > 0, not completed, ordered by most recent
     continue_watching = WatchProgress.objects.filter(
         user=request.user,
-        completed=False,
-        progress_seconds__gt=0
+        progress_seconds__gt=0,
+        completed=False
     ).order_by('-last_watched')[:10]
     
     serializer = WatchProgressSerializer(continue_watching, many=True)
+    return Response(serializer.data)
     return Response(serializer.data)
