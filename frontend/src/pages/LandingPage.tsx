@@ -1,13 +1,40 @@
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
+import { useFormValidation, LOGIN_VALIDATION_CONFIG } from '../hooks/useFormValidation';
 import styles from './LandingPage.module.css';
 import Button from '../components/Button';
+import ValidatedInput from '../components/ValidatedInput';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
 import BackgroundImageLanding from '../components/BackgroundImageLanding';
+import mailSvg from '../assets/mail.svg';
 
 const LandingPage: React.FC = () => {
   const [email, setEmail] = useState('');
+  const navigate = useNavigate();
+  const { validationState, validateField } = useFormValidation(LOGIN_VALIDATION_CONFIG);
+
+  const handleEmailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setEmail(e.target.value);
+  };
+
+  const handleEmailBlur = (e: React.FocusEvent<HTMLInputElement>) => {
+    validateField('email', e.target.value);
+  };
+
+  const handleSignIn = () => {
+    if (email && !validationState.email?.hasError) {
+      // Store email and navigate to password page
+      localStorage.setItem('email', email);
+      navigate('/password', { state: { email } });
+    } else if (email) {
+      // Email has validation error, validate it to show error
+      validateField('email', email);
+    } else {
+      // No email entered, go to normal login page
+      navigate('/login');
+    }
+  };
 
   return (
     <BackgroundImageLanding>
@@ -30,18 +57,27 @@ const LandingPage: React.FC = () => {
               
               {/* Email Input and Sign In Button */}
               <div className={styles.emailGroup}>
-                <div className={styles.inputRow}>
-                  <input
-                    type="email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    placeholder="Email Address"
-                    className={styles.inputField}
-                  />
-                </div>
-                <Link to="/login" className={styles.loginLink}>
-                  <Button>Sign In</Button>
-                </Link>
+                <ValidatedInput
+                  type="email"
+                  name="email"
+                  value={email}
+                  onChange={handleEmailChange}
+                  onBlur={handleEmailBlur}
+                  placeholder="Email Address"
+                  icon={mailSvg}
+                  iconAlt="Mail"
+                  hasError={validationState.email?.hasError}
+                  errorMessage={validationState.email?.errorMessage}
+                  autoComplete="email"
+                  variant="landing"
+                />
+                <Button 
+                  variant="small" 
+                  onClick={handleSignIn}
+                  type="button"
+                >
+                  Sign In
+                </Button>
               </div>
             </div>
           </div>
