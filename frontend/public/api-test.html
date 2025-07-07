@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>API Test</title>
+</head>
+<body>
+    <h1>Video API Test</h1>
+    <div id="result"></div>
+    
+    <script>
+        async function testAPI() {
+            try {
+                // Get auth token
+                let token = localStorage.getItem('auth_token');
+                if (!token) {
+                    // Use a fallback token if none in localStorage
+                    token = '4d8fda6469544ef749f03a26ce0c3dfd35a9e2c7';
+                    localStorage.setItem('auth_token', token);
+                    document.getElementById('result').innerHTML = 'Using fallback token. Login in the main app to get your token.';
+                }
+                
+                const response = await fetch('http://localhost:8000/api/videos/', {
+                    headers: {
+                        'Authorization': `Token ${token}`,
+                        'Content-Type': 'application/json'
+                    },
+                    cache: 'no-cache' // Force no cache
+                });
+                
+                const data = await response.json();
+                console.log('API Response:', data);
+                
+                let html = '<h2>Videos:</h2>';
+                if (data.results) {
+                    data.results.forEach((video, index) => {
+                        html += `
+                            <div style="border: 1px solid #ccc; margin: 10px; padding: 10px;">
+                                <h3>${index + 1}. ${video.title}</h3>
+                                <p><strong>Genre:</strong> <span style="background: #e3f2fd; padding: 2px 8px; border-radius: 4px;">${video.genre ? video.genre.name : 'Unknown'}</span></p>
+                                <p><strong>Altersfreigabe:</strong> <span style="background: #ffecb3; padding: 2px 8px; border-radius: 4px;">${video.age_rating || 'FSK 16'}</span></p>
+                                <p><strong>Description:</strong> ${video.description}</p>
+                                <p><strong>Laufzeit:</strong> ${video.duration || 'Unbekannt'}</p>
+                                <p><strong>Thumbnail URL:</strong> ${video.thumbnail || 'NO THUMBNAIL'}</p>
+                                ${video.thumbnail ? `
+                                    <div>
+                                        <img src="${video.thumbnail}" 
+                                             style="max-width: 200px; border: 1px solid #ddd;" 
+                                             alt="${video.title}"
+                                             onload="console.log('✅ Thumbnail loaded: ${video.title}')"
+                                             onerror="console.log('❌ Thumbnail failed: ${video.title} - ${video.thumbnail}')">
+                                    </div>
+                                ` : '<p style="color: red;">No thumbnail available</p>'}
+                                <p><strong>Video Files:</strong> ${video.video_files ? video.video_files.length : 0}</p>
+                            </div>
+                        `;
+                    });
+                } else {
+                    html += '<p>No videos found</p>';
+                }
+                
+                document.getElementById('result').innerHTML = html;
+                
+            } catch (error) {
+                console.error('API Error:', error);
+                document.getElementById('result').innerHTML = `Error: ${error.message}`;
+            }
+        }
+        
+        // Run test
+        testAPI();
+    </script>
+</body>
+</html>
