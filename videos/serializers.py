@@ -18,9 +18,31 @@ class VideoFileSerializer(serializers.ModelSerializer):
     """
     Serializer for VideoFile model
     """
+    file = serializers.SerializerMethodField()
+    
     class Meta:
         model = VideoFile
         fields = ['id', 'quality', 'file', 'file_size', 'is_processed']
+    
+    def get_file(self, obj):
+        """
+        Return direct URL for external files, otherwise use default file URL
+        """
+        file_str = str(obj.file)
+        # If it's an external URL that got mangled by Django's FileField
+        if 'commondatastorage.googleapis.com' in file_str:
+            # Extract the actual URL
+            if 'https%3A/' in file_str:
+                # URL encoded version
+                return file_str.replace('/media/https%3A/', 'https://').replace('%3A/', '://')
+            elif 'https://' in file_str:
+                # Direct URL
+                return file_str.split('/media/')[-1] if '/media/' in file_str else file_str
+            else:
+                # Try to reconstruct the URL
+                return f"https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/{file_str.split('/')[-1]}"
+        # For local files, use the default behavior
+        return obj.file.url if obj.file else None
 
 
 class VideoListSerializer(serializers.ModelSerializer):
@@ -28,6 +50,8 @@ class VideoListSerializer(serializers.ModelSerializer):
     Serializer for video list view
     """
     genre = GenreSerializer(read_only=True)
+    video_files = VideoFileSerializer(many=True, read_only=True)
+    thumbnail = serializers.SerializerMethodField()
     
     class Meta:
         model = Video
@@ -38,9 +62,21 @@ class VideoListSerializer(serializers.ModelSerializer):
             'thumbnail', 
             'genre', 
             'duration', 
+            'age_rating',
             'created_at',
-            'is_featured'
+            'is_featured',
+            'video_files'
         ]
+    
+    def get_thumbnail(self, obj):
+        """
+        Return thumbnail URL - prefer uploaded image, fallback to external URL
+        """
+        if obj.thumbnail:
+            return obj.thumbnail.url
+        elif getattr(obj, 'thumbnail_url', None):
+            return getattr(obj, 'thumbnail_url', None)
+        return None
 
 
 class VideoDetailSerializer(serializers.ModelSerializer):
@@ -49,6 +85,7 @@ class VideoDetailSerializer(serializers.ModelSerializer):
     """
     genre = GenreSerializer(read_only=True)
     video_files = VideoFileSerializer(many=True, read_only=True)
+    thumbnail = serializers.SerializerMethodField()
     
     class Meta:
         model = Video
@@ -59,11 +96,22 @@ class VideoDetailSerializer(serializers.ModelSerializer):
             'thumbnail',
             'genre',
             'duration',
+            'age_rating',
             'created_at',
             'updated_at',
             'is_featured',
             'video_files'
         ]
+    
+    def get_thumbnail(self, obj):
+        """
+        Return thumbnail URL - prefer uploaded image, fallback to external URL
+        """
+        if obj.thumbnail:
+            return obj.thumbnail.url
+        elif getattr(obj, 'thumbnail_url', None):
+            return getattr(obj, 'thumbnail_url', None)
+        return None
 
 
 class WatchProgressSerializer(serializers.ModelSerializer):
@@ -80,6 +128,7 @@ class WatchProgressSerializer(serializers.ModelSerializer):
             'video',
             'progress_seconds',
             'progress_percentage',
+            'last_resolution',
             'last_watched',
             'completed'
         ]
@@ -97,7 +146,7 @@ class WatchProgressUpdateSerializer(serializers.ModelSerializer):
     """
     class Meta:
         model = WatchProgress
-        fields = ['progress_seconds', 'completed']
+        fields = ['progress_seconds', 'last_resolution', 'completed']
 
 
 class VideoUploadSerializer(serializers.ModelSerializer):
