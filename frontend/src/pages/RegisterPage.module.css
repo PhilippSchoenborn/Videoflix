@@ -84,56 +84,8 @@
 .inputGroup {
   display: flex;
   flex-direction: column;
-  gap: 16px;
-}
-
-.inputRow {
-  width: 408px;
-  height: 48px;
-  padding: 12px 24px;
-  border-radius: 12px;
-  background-color: #1C1A20CC;
-  border: 1px solid #2E3EDF;
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-
-.inputIcon {
-  width: 24px;
-  height: 24px;
-}
-
-.inputField {
-  flex: 1;
-  background-color: transparent;
-  border: none;
-  color: #FFFFFF;
-  font-family: 'DM Sans', sans-serif;
-  font-weight: 500;
-  font-size: 16px;
-  line-height: 100%;
-  outline: none;
-}
-
-.inputField::placeholder {
-  color: #9CA3AF;
-  font-family: 'DM Sans', sans-serif;
-  font-weight: 500;
-  font-size: 16px;
-  line-height: 100%;
-}
-
-.inputFieldPassword {
-  padding-right: 44px;
-}
-
-.visibilityIcon {
-  width: 24px;
-  height: 24px;
-  cursor: pointer;
-  position: absolute;
-  right: 24px;
+  gap: 24px;
+  width: 100%;
 }
 
 .bottomGroup {
@@ -170,4 +122,11 @@
 
 .signInLink:hover {
   text-decoration: underline;
+}
+
+.inputRow:focus-within,
+.inputRow:has(input:focus),
+._inputRow_c1ked:focus-within,
+._inputRow_c1ked:has(input:focus) {
+  border-color: #2E3EDF !important;
 }
