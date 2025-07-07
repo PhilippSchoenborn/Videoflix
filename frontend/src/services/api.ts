@@ -14,11 +14,13 @@ import type {
   GenreWithVideos,
   VideoStreamData,
   QualityOptions,
+  VideoUploadData,
+  DashboardStats,
 } from '../types';
 
 class ApiService {
   private api: AxiosInstance;
-  private baseURL = 'http://localhost:8000/api'; // Django backend URL
+  private baseURL = 'http://127.0.0.1:8000/api'; // Django backend URL
 
   constructor() {
     this.api = axios.create({
@@ -107,7 +109,18 @@ class ApiService {
     search?: string;
     page?: number;
   }): Promise<Video[]> {
-    const response = await this.api.get<Video[]>('/videos/', { params });
+    const response = await this.api.get('/videos/', { 
+      params: {
+        ...params,
+        _t: Date.now() // Cache buster
+      }
+    });
+    
+    // Handle paginated response
+    if (response.data && typeof response.data === 'object' && 'results' in response.data) {
+      return response.data.results;
+    }
+    // Fallback for non-paginated response
     return response.data;
   }
 
@@ -117,12 +130,33 @@ class ApiService {
   }
 
   async getFeaturedVideos(): Promise<Video[]> {
-    const response = await this.api.get<Video[]>('/videos/featured/');
+    const response = await this.api.get('/videos/featured/');
+    // Handle paginated response
+    if (response.data && typeof response.data === 'object' && 'results' in response.data) {
+      return response.data.results;
+    }
+    // Fallback for non-paginated response
     return response.data;
   }
 
   async getVideosByGenre(): Promise<GenreWithVideos[]> {
-    const response = await this.api.get<GenreWithVideos[]>('/videos/by-genre/');
+    const response = await this.api.get('/videos/by-genre/');
+    return response.data;
+  }
+
+  async uploadVideo(data: VideoUploadData): Promise<Video> {
+    const formData = new FormData();
+    formData.append('title', data.title);
+    formData.append('description', data.description);
+    formData.append('genre', data.genre.toString());
+    formData.append('age_rating', data.age_rating);
+    formData.append('video_file', data.video_file);
+
+    const response = await this.api.post<Video>('/videos/upload/', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    });
     return response.data;
   }
 
@@ -132,7 +166,7 @@ class ApiService {
   }
 
   async getVideoQualityOptions(videoId: number): Promise<QualityOptions> {
-    const response = await this.api.get<QualityOptions>(`/videos/${videoId}/quality-options/`);
+    const response = await this.api.get<QualityOptions>(`/videos/${videoId}/qualities/`);
     return response.data;
   }
 
@@ -144,24 +178,56 @@ class ApiService {
 
   // Watch Progress Methods
   async getWatchProgress(): Promise<WatchProgress[]> {
-    const response = await this.api.get<WatchProgress[]>('/videos/watch-progress/');
+    const response = await this.api.get('/videos/progress/');
+    // Handle paginated response
+    if (response.data && typeof response.data === 'object' && 'results' in response.data) {
+      return response.data.results;
+    }
     return response.data;
   }
 
   async getContinueWatching(): Promise<WatchProgress[]> {
-    const response = await this.api.get<WatchProgress[]>('/videos/continue-watching/');
+    const response = await this.api.get('/videos/continue-watching/');
     return response.data;
   }
 
   async updateWatchProgress(
     videoId: number,
-    progressSeconds: number
+    progressSeconds: number,
+    completed: boolean = false,
+    resolution?: string
   ): Promise<WatchProgress> {
+    const payload: any = { 
+      progress_seconds: progressSeconds,
+      completed: completed
+    };
+    
+    if (resolution) {
+      payload.last_resolution = resolution;
+    }
+    
     const response = await this.api.post<WatchProgress>(
-      `/videos/${videoId}/watch-progress/`,
-      { progress_seconds: progressSeconds }
+      `/videos/${videoId}/progress/`,
+      payload
     );
     return response.data;
+  }
+
+  async getDashboardStats(): Promise<DashboardStats> {
+    const [videos, genres, watchProgress] = await Promise.all([
+      this.getVideos(),
+      this.getGenres(),
+      this.getWatchProgress(),
+    ]);
+
+    const completedVideos = watchProgress.filter(wp => wp.completed).length;
+
+    return {
+      total_videos: videos.length,
+      total_genres: genres.length,
+      watch_progress_count: watchProgress.length,
+      completed_videos: completedVideos,
+    };
   }
 
   // Utility Methods
