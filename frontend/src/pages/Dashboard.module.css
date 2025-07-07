@@ -294,6 +294,34 @@
   }
 }
 
+@media (max-width: 900px) and (orientation: landscape) {
+  .heroContent {
+    bottom: 12px;
+    padding: 12px 8px;
+    min-height: unset;
+    max-height: 120px;
+    border-radius: 8px;
+    font-size: 13px;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+  }
+  .videoTitle {
+    font-size: 18px;
+    margin-bottom: 6px;
+  }
+  .videoDescription {
+    font-size: 12px;
+    margin-bottom: 8px;
+  }
+  .playButton {
+    height: 36px;
+    font-size: 13px;
+    padding: 10px 16px;
+    min-width: 80px;
+  }
+}
+
 @media (max-width: 768px) {
   .previewSection {
     height: 60vh;
@@ -344,5 +372,26 @@
   
   .listSection {
     padding: 20px 16px;
+  }
+}
+
+@media (max-width: 400px) {
+  .heroContent {
+    padding: 8px;
+    bottom: 10px;
+    left: 4px;
+    right: 4px;
+    border-radius: 8px;
+  }
+  .videoTitle {
+    font-size: 16px;
+  }
+  .videoDescription {
+    font-size: 12px;
+  }
+  .playButton {
+    padding: 8px 12px;
+    font-size: 12px;
+    height: 32px;
   }
 }
