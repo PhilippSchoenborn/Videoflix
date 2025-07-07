@@ -1,0 +1,32 @@
+declare const styles: {
+  readonly videoSection: string;
+  readonly sectionHeader: string;
+  readonly sectionTitle: string;
+  readonly videoCount: string;
+  readonly viewAllButton: string;
+  readonly videoGrid: string;
+  readonly videoCard: string;
+  readonly videoThumbnail: string;
+  readonly thumbnailImage: string;
+  readonly placeholderThumbnail: string;
+  readonly playOverlay: string;
+  readonly playButton: string;
+  readonly progressBar: string;
+  readonly progressFill: string;
+  readonly resumeButton: string;
+  readonly videoInfo: string;
+  readonly videoTitle: string;
+  readonly videoDescription: string;
+  readonly videoMeta: string;
+  readonly genreInfo: string;
+  readonly starIcon: string;
+  readonly genreText: string;
+  readonly progressText: string;
+  readonly videoTags: string;
+  readonly ageRating: string;
+  readonly featuredTag: string;
+  readonly emptyState: string;
+  readonly emptyMessage: string;
+};
+
+export default styles;
