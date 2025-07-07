@@ -50,18 +50,20 @@ export interface Video {
   id: number;
   title: string;
   description: string;
-  thumbnail: string;
+  thumbnail: string | null;
   genre: Genre;
   duration: string; // Django DurationField as string
+  age_rating: 'FSK 0' | 'FSK 6' | 'FSK 12' | 'FSK 16' | 'FSK 18';
   created_at: string;
-  updated_at: string;
+  updated_at?: string;
   is_featured: boolean;
+  video_files?: VideoFile[];
 }
 
 export interface VideoFile {
   id: number;
   video: number;
-  quality: '120p' | '360p' | '720p' | '1080p';
+  quality: '120p' | '360p' | '480p' | '720p' | '1080p';
   file: string;
   file_size: number;
   is_processed: boolean;
@@ -76,8 +78,18 @@ export interface WatchProgress {
   user: number;
   video: Video;
   progress_seconds: number;
+  progress_percentage?: number;
+  last_resolution?: string;
   last_watched: string;
   completed: boolean;
+}
+
+// Pagination Types
+export interface PaginatedResponse<T> {
+  count: number;
+  next: string | null;
+  previous: string | null;
+  results: T[];
 }
 
 // API Response Types
@@ -110,8 +122,32 @@ export interface QualityOptions {
 
 // Dashboard Types
 export interface GenreWithVideos {
-  genre: Genre;
+  id: number;
+  name: string;
+  description?: string;
   videos: Video[];
+}
+
+export interface VideoUploadData {
+  title: string;
+  description: string;
+  genre: number;
+  age_rating: 'FSK 0' | 'FSK 6' | 'FSK 12' | 'FSK 16' | 'FSK 18';
+  video_file: File;
+}
+
+export interface SearchFilters {
+  genre?: number;
+  search?: string;
+  age_rating?: string;
+  featured?: boolean;
+}
+
+export interface DashboardStats {
+  total_videos: number;
+  total_genres: number;
+  watch_progress_count: number;
+  completed_videos: number;
 }
 
 // Form Validation
