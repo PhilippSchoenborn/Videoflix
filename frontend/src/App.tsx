@@ -1,11 +1,15 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from './context/AuthContext';
+import { ToastProvider } from './context/ToastContext';
+import ToastContainer from './components/ToastContainer';
 import LandingPage from './pages/LandingPage';
 import LoginPage from './pages/LoginPage';
+import PasswordPage from './pages/PasswordPage';
 import RegisterPage from './pages/RegisterPage';
 import ForgotPasswordPage from './pages/ForgotPasswordPage';
-import DashboardPage from './pages/DashboardPage';
+import EmailVerificationPage from './pages/EmailVerificationPage';
+import Dashboard from './pages/Dashboard';
 import Impressum from './pages/Impressum';
 import Datenschutz from './pages/Datenschutz';
 
@@ -42,47 +46,59 @@ const PublicRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
 function App() {
   return (
     <AuthProvider>
-      <Router>
-        <div className="App">
-          <Routes>
-            <Route path="/" element={<LandingPage />} />
-            <Route 
-              path="/login" 
-              element={
-                <PublicRoute>
-                  <LoginPage />
-                </PublicRoute>
-              } 
-            />
-            <Route 
-              path="/register" 
-              element={
-                <PublicRoute>
-                  <RegisterPage />
-                </PublicRoute>
-              } 
-            />
-            <Route 
-              path="/forgot-password" 
-              element={
-                <PublicRoute>
-                  <ForgotPasswordPage />
-                </PublicRoute>
-              } 
-            />
-            <Route 
-              path="/dashboard" 
-              element={
-                <ProtectedRoute>
-                  <DashboardPage />
-                </ProtectedRoute>
-              } 
-            />
-            <Route path="/impressum" element={<Impressum />} />
-            <Route path="/datenschutz" element={<Datenschutz />} />
-          </Routes>
-        </div>
-      </Router>
+      <ToastProvider>
+        <Router>
+          <div className="App">
+            <Routes>
+              <Route path="/" element={<LandingPage />} />
+              <Route 
+                path="/login" 
+                element={
+                  <PublicRoute>
+                    <LoginPage />
+                  </PublicRoute>
+                } 
+              />
+              <Route 
+                path="/password" 
+                element={
+                  <PublicRoute>
+                    <PasswordPage />
+                  </PublicRoute>
+                } 
+              />
+              <Route 
+                path="/register" 
+                element={
+                  <PublicRoute>
+                    <RegisterPage />
+                  </PublicRoute>
+                } 
+              />
+              <Route 
+                path="/forgot-password" 
+                element={
+                  <PublicRoute>
+                    <ForgotPasswordPage />
+                  </PublicRoute>
+                } 
+              />
+              <Route path="/verify-email/:token" element={<EmailVerificationPage />} />
+              <Route 
+                path="/dashboard" 
+                element={
+                  <ProtectedRoute>
+                    <Dashboard />
+                  </ProtectedRoute>
+                } 
+              />
+              <Route path="/impressum" element={<Impressum />} />
+              <Route path="/datenschutz" element={<Datenschutz />} />
+            </Routes>
+            <ToastContainer />
+          </div>
+        </Router>
+      </ToastProvider>
     </AuthProvider>
   );
 }
