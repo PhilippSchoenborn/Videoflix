@@ -1,0 +1,292 @@
+.videoOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: rgba(0, 0, 0, 0.95);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: fadeIn 0.3s ease-in-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    backdrop-filter: blur(0px);
+    -webkit-backdrop-filter: blur(0px);
+  }
+  to {
+    opacity: 1;
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+  }
+}
+
+.overlayContent {
+  width: 90%;
+  max-width: 1200px;
+  max-height: 90vh;
+  background: rgba(20, 20, 20, 0.9);
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+  animation: slideIn 0.3s ease-out;
+}
+
+@keyframes slideIn {
+  from {
+    transform: translateY(-50px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.overlayHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 24px;
+  background: rgba(10, 10, 10, 0.8);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.backButton {
+  background: none;
+  border: none;
+  color: white;
+  cursor: pointer;
+  padding: 8px;
+  border-radius: 8px;
+  transition: background-color 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.backButton:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+.overlayTitle {
+  font-family: 'DM Sans', sans-serif;
+  font-weight: 700;
+  font-size: 24px;
+  color: white;
+  margin: 0;
+  text-align: center;
+  flex: 1;
+  padding: 0 16px;
+}
+
+.logo {
+  height: 32px;
+  width: auto;
+}
+
+.videoWrapper {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 16/9;
+  background: #000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.overlayVideo {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.loadingIndicator {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  color: white;
+  font-family: 'DM Sans', sans-serif;
+}
+
+.spinner {
+  width: 40px;
+  height: 40px;
+  border: 3px solid rgba(255, 255, 255, 0.2);
+  border-top: 3px solid #E50914;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.errorMessage {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  color: #ff4444;
+  font-family: 'DM Sans', sans-serif;
+  text-align: center;
+}
+
+.retryButton {
+  background: #E50914;
+  color: white;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 8px;
+  font-family: 'DM Sans', sans-serif;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.retryButton:hover {
+  background: #F40612;
+}
+
+.overlayControls {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px 24px;
+  background: rgba(30, 30, 30, 0.8);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.resolutionLabel {
+  color: white;
+  font-family: 'DM Sans', sans-serif;
+  font-weight: 500;
+  font-size: 14px;
+}
+
+.resolutionSelect {
+  background: rgba(40, 40, 40, 0.8);
+  color: white;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 8px;
+  padding: 8px 12px;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 14px;
+  cursor: pointer;
+  outline: none;
+  transition: border-color 0.3s ease;
+}
+
+.resolutionSelect:focus {
+  border-color: #E50914;
+}
+
+.resolutionSelect option {
+  background: #2a2a2a;
+  color: white;
+}
+
+.videoDescription {
+  padding: 16px 24px;
+  background: rgba(20, 20, 20, 0.8);
+  max-height: 120px;
+  overflow-y: auto;
+}
+
+.videoDescription p {
+  color: #B3B3B3;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 14px;
+  line-height: 140%;
+  margin: 0;
+}
+
+/* Custom Scrollbar for Description */
+.videoDescription::-webkit-scrollbar {
+  width: 6px;
+}
+
+.videoDescription::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 3px;
+}
+
+.videoDescription::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.3);
+  border-radius: 3px;
+}
+
+.videoDescription::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.5);
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .overlayContent {
+    width: 95%;
+    max-height: 95vh;
+  }
+  
+  .overlayHeader {
+    padding: 12px 16px;
+  }
+  
+  .overlayTitle {
+    font-size: 18px;
+    padding: 0 8px;
+  }
+  
+  .logo {
+    height: 24px;
+  }
+  
+  .overlayControls {
+    padding: 12px 16px;
+  }
+  
+  .videoDescription {
+    padding: 12px 16px;
+  }
+}
+
+@media (max-width: 480px) {
+  .overlayContent {
+    width: 98%;
+    margin: 1vh 0;
+  }
+  
+  .overlayHeader {
+    padding: 8px 12px;
+  }
+  
+  .overlayTitle {
+    font-size: 16px;
+    padding: 0 4px;
+  }
+  
+  .overlayControls {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+    padding: 12px;
+  }
+  
+  .videoDescription {
+    padding: 12px;
+    max-height: 80px;
+  }
+  
+  .videoDescription p {
+    font-size: 12px;
+  }
+}
