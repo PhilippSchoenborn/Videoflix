@@ -230,6 +230,13 @@ class ApiService {
     };
   }
 
+  // Email Verification Method
+  async verifyEmail(token: string): Promise<{ message: string }> {
+    // Adjust the endpoint if your backend uses a different path
+    const response = await this.api.get(`/verify-email/${token}/`);
+    return response.data;
+  }
+
   // Utility Methods
   isAuthenticated(): boolean {
     return !!localStorage.getItem('auth_token');
