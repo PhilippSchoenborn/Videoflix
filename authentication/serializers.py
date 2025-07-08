@@ -5,6 +5,7 @@ from rest_framework import serializers
 from django.contrib.auth import authenticate, get_user_model
 from django.contrib.auth.password_validation import validate_password
 from .utils import validate_password_strength
+from django.conf import settings
 
 User = get_user_model()
 
@@ -69,6 +70,11 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
         """
         validated_data.pop('password_confirm')
         user = User.objects.create_user(**validated_data)
+        if settings.DEBUG:
+            user.is_active = True
+            if hasattr(user, 'is_email_verified'):
+                user.is_email_verified = True
+            user.save()
         return user
 
 
