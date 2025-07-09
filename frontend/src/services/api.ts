@@ -20,7 +20,9 @@ import type {
 
 class ApiService {
   private api: AxiosInstance;
-  private baseURL = 'http://127.0.0.1:8000/api'; // Django backend URL
+  private baseURL =
+    import.meta.env.VITE_API_BASE_URL ||
+    window.location.origin.replace(/:\d+$/, ':8000') + '/api'; // Dynamisch: .env oder Host
 
   constructor() {
     this.api = axios.create({
