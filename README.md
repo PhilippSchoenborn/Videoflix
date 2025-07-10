@@ -101,6 +101,15 @@ docker exec videoflix-web pytest --cov=. --cov-report=html
 
 ---
 
+## ⚡️ Email Verification in Development/Testing
+
+- In development mode (`DEBUG=True`), all newly registered users are automatically marked as email-verified.
+- No email verification token is created and no verification email is sent in this mode.
+- This ensures you can log in directly after registration (e.g. for Postman, frontend, or mentor testing) without manual email confirmation.
+- In production (`DEBUG=False`), users must verify their email via the link sent to their inbox.
+
+---
+
 ## 📄 Hinweise
 - Alle Umgebungsvariablen in `.env` pflegen
 - Testdatenbank/Settings für lokale Tests ggf. auf SQLite anpassen
