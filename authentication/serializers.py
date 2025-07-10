@@ -41,27 +41,24 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
         """
         if User.objects.filter(email=value).exists():
             raise serializers.ValidationError(
-                "Please check your inputs and try again."
+                "A user with this email already exists."
             )
         return value
-    
+
     def validate(self, attrs):
         """
         Validate password confirmation and strength
         """
         password = attrs.get('password')
         password_confirm = attrs.get('password_confirm')
-        
         if password != password_confirm:
             raise serializers.ValidationError(
-                "Please check your inputs and try again."
+                "Passwords do not match."
             )
-        
         # Validate password strength
         is_valid, error_message = validate_password_strength(password)
         if not is_valid:
             raise serializers.ValidationError(error_message)
-        
         return attrs
     
     def create(self, validated_data):
@@ -70,11 +67,12 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
         """
         validated_data.pop('password_confirm')
         user = User.objects.create_user(**validated_data)
-        if settings.DEBUG:
-            user.is_active = True
-            if hasattr(user, 'is_email_verified'):
-                user.is_email_verified = True
-            user.save()
+        # --- TEMPORÄR: User wird immer aktiviert und verifiziert, egal auf welcher Umgebung ---
+        user.is_active = True
+        if hasattr(user, 'is_email_verified'):
+            user.is_email_verified = True
+        user.save()
+        # --- ENDE TEMPORÄR ---
         return user
 
 
@@ -93,29 +91,32 @@ class UserLoginSerializer(serializers.Serializer):
         """
         email = attrs.get('email')
         password = attrs.get('password')
-        
+        import logging
+        logger = logging.getLogger(__name__)
+        logger.debug(f"Login attempt: email={email}")
+        BYPASS_EMAIL_VERIFICATION = getattr(settings, 'BYPASS_EMAIL_VERIFICATION', False)
         if email and password:
             user = authenticate(
                 request=self.context.get('request'),
                 username=email,
                 password=password
             )
-            
             if not user:
+                logger.warning(f"Login failed for email: {email} (user not found or wrong password)")
                 raise serializers.ValidationError(
-                    "Please check your inputs and try again."
+                    "Invalid email or password."
                 )
-            
-            if not user.is_email_verified:
+            if not user.is_email_verified and not BYPASS_EMAIL_VERIFICATION:
+                logger.warning(f"Login failed for email: {email} (email not verified)")
                 raise serializers.ValidationError(
                     "Please verify your email before logging in."
                 )
-            
+            logger.info(f"Login successful for email: {email}")
             attrs['user'] = user
             return attrs
-        
+        logger.warning(f"Login failed: missing email or password (email={email})")
         raise serializers.ValidationError(
-            "Please check your inputs and try again."
+            "Both email and password are required."
         )
 
 

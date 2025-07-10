@@ -110,6 +110,24 @@ docker exec videoflix-web pytest --cov=. --cov-report=html
 
 ---
 
+## 📝 Beispiel-User für Login/Tests
+
+Nach der Registrierung ist jeder User sofort aktiviert und verifiziert (temporär, für Demo/Tests). Du kannst dich direkt nach der Registrierung einloggen.
+
+**Beispiel-User:**
+
+- **E-Mail:** testuser@example.com
+- **Benutzername:** testuser
+- **Passwort:** Testpass123!
+
+**Login:**
+- E-Mail: `testuser@example.com`
+- Passwort: `Testpass123!`
+
+> Hinweis: Für Produktivbetrieb kann die automatische Verifizierung im Code leicht wieder deaktiviert werden (siehe Kommentar in `serializers.py`).
+
+---
+
 ## 📄 Hinweise
 - Alle Umgebungsvariablen in `.env` pflegen
 - Testdatenbank/Settings für lokale Tests ggf. auf SQLite anpassen
