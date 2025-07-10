@@ -20,17 +20,22 @@ def create_user_profile_actions(sender, instance, created, **kwargs):
     """
     if created:
         logger.info(f'New user created: {instance.email} (ID: {instance.id})')
-        # Ensure no duplicate token and always generate a unique token
-        try:
-            EmailVerificationToken.objects.filter(user=instance).delete()
-            from .utils import generate_verification_token
-            token = generate_verification_token()
-            verification_token = EmailVerificationToken.objects.create(user=instance, token=token)
-            logger.info(f'Email verification token created for user {instance.email}')
-            if settings.DEBUG:
-                print(f'Welcome email would be sent to {instance.email}')
-        except Exception as e:
-            logger.error(f'Error creating verification token for user {instance.email}: {str(e)}')
+        # In DEBUG: direkt als verifiziert markieren und KEIN Token erzeugen
+        from django.conf import settings
+        if settings.DEBUG:
+            instance.is_email_verified = True
+            instance.save(update_fields=["is_email_verified"])
+            print(f"[DEBUG] User {instance.email} automatisch als verifiziert markiert.")
+        else:
+            # Ensure no duplicate token and always generate a unique token
+            try:
+                EmailVerificationToken.objects.filter(user=instance).delete()
+                from .utils import generate_verification_token
+                token = generate_verification_token()
+                verification_token = EmailVerificationToken.objects.create(user=instance, token=token)
+                logger.info(f'Email verification token created for user {instance.email}')
+            except Exception as e:
+                logger.error(f'Error creating verification token for user {instance.email}: {str(e)}')
 
 
 @receiver(post_save, sender=CustomUser)
