@@ -19,6 +19,10 @@ class CustomUser(AbstractUser):
         default=False,
         help_text=_('Designates whether the user has verified their email address.')
     )
+    is_active = models.BooleanField(
+        default=False,
+        help_text=_('Designates whether this user should be treated as active. Unselect this instead of deleting accounts.')
+    )
     date_of_birth = models.DateField(
         null=True, 
         blank=True,
