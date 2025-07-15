@@ -13,17 +13,32 @@ interface ScrollableVideoListProps {
   onResumeClick?: (video: Video, progress: WatchProgress) => Promise<void>;
 }
 
-const ScrollableVideoList: React.FC<ScrollableVideoListProps> = ({ 
-  title, 
+
+
+const ScrollableVideoList: React.FC<ScrollableVideoListProps> = ({
+  title,
   description,
-  videos, 
-  onVideoClick, 
+  videos,
+  onVideoClick,
   onVideoHover,
   watchProgress = [],
   showProgress = false,
   onResumeClick
 }) => {
   const scrollContainerRef = useRef<HTMLUListElement>(null);
+
+  const getAbsoluteThumbnailUrl = (url: string) => {
+    if (!url || typeof url !== 'string') return '';
+    if (url.startsWith('http://') || url.startsWith('https://')) return url;
+    
+    // Backend läuft auf Port 8000, nicht auf dem Frontend-Port
+    const backendUrl = 'http://localhost:8000';
+    
+    if (url.startsWith('/media/') || url.startsWith('/static/')) {
+      return backendUrl + url;
+    }
+    return backendUrl + '/media/' + url;
+  };
 
   const scrollHorizontally = (amount: number) => {
     if (scrollContainerRef.current) {
@@ -47,7 +62,7 @@ const ScrollableVideoList: React.FC<ScrollableVideoListProps> = ({
         )}
       </div>
       <div className={styles.scrollWrapper}>
-        <button 
+        <button
           className={`${styles.scrollButton} ${styles.scrollLeft}`}
           onClick={() => scrollHorizontally(-300)}
           aria-label="Scroll left"
@@ -56,23 +71,22 @@ const ScrollableVideoList: React.FC<ScrollableVideoListProps> = ({
             <path d="M15 18l-6-6 6-6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
           </svg>
         </button>
-        
         <ul ref={scrollContainerRef} className={styles.videoContainer}>
           {videos.map((video) => {
             const progress = getVideoProgress(video.id);
             const progressPercentage = progress?.progress_percentage || 0;
-            
+            const thumbnailUrl: string = getAbsoluteThumbnailUrl(video.thumbnail ?? '');
             return (
-              <li 
-                key={video.id} 
+              <li
+                key={video.id}
                 className={styles.videoItem}
                 onClick={() => onVideoClick(video)}
                 onMouseEnter={() => onVideoHover?.(video)}
               >
                 <div className={styles.videoThumbnail}>
                   {video.thumbnail ? (
-                    <img 
-                      src={video.thumbnail} 
+                    <img
+                      src={thumbnailUrl}
                       alt={video.title}
                       className={styles.thumbnailImage}
                     />
@@ -83,17 +97,14 @@ const ScrollableVideoList: React.FC<ScrollableVideoListProps> = ({
                       </svg>
                     </div>
                   )}
-                  
-                  {/* Progress Bar */}
                   {showProgress && progress && progressPercentage > 0 && (
                     <div className={styles.progressBar}>
-                      <div 
+                      <div
                         className={styles.progressFill}
                         style={{ width: `${progressPercentage}%` }}
                       />
                     </div>
                   )}
-                  
                   <div className={styles.videoOverlay}>
                     {showProgress && progress && onResumeClick ? (
                       <button
@@ -127,8 +138,7 @@ const ScrollableVideoList: React.FC<ScrollableVideoListProps> = ({
             );
           })}
         </ul>
-        
-        <button 
+        <button
           className={`${styles.scrollButton} ${styles.scrollRight}`}
           onClick={() => scrollHorizontally(300)}
           aria-label="Scroll right"
