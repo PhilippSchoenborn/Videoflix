@@ -1,0 +1,13 @@
+{% extends "core/base.html" %}
+{% block content %}
+  <h2>Video Thumbnails Test</h2>
+  <ul>
+    {% for video in videos %}
+      <li>
+        <strong>{{ video.title }}</strong><br>
+        <img src="{{ video.get_thumbnail_url }}" alt="Thumbnail" style="max-width:200px;">
+        <br>URL: {{ video.get_thumbnail_url }}
+      </li>
+    {% endfor %}
+  </ul>
+{% endblock %}
