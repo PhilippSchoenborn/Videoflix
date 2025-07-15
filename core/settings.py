@@ -238,6 +238,9 @@ DEFAULT_FROM_EMAIL = os.environ.get('DEFAULT_FROM_EMAIL', default='noreply@video
 # Custom User Model
 AUTH_USER_MODEL = 'authentication.CustomUser'
 
+# Frontend URL for email links
+FRONTEND_URL = os.environ.get('FRONTEND_URL', default='http://localhost:5173')
+
 # File Upload Settings
 FILE_UPLOAD_MAX_MEMORY_SIZE = 100 * 1024 * 1024  # 100MB
 DATA_UPLOAD_MAX_MEMORY_SIZE = 100 * 1024 * 1024  # 100MB

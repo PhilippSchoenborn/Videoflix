@@ -1,4 +1,3 @@
-
 # 🎬 Videoflix - Django REST API Backend
 
 A modern video streaming backend API built with Django REST Framework.
@@ -46,6 +45,32 @@ A modern video streaming backend API built with Django REST Framework.
    - **Backend API:** http://localhost:8000
    - **Django Admin:** http://localhost:8000/admin
    - **API Documentation:** http://localhost:8000/api/
+
+## 🔌 Frontend Integration
+
+This backend is designed to work with a separate frontend application. To connect a frontend:
+
+1. **Configure Frontend URL in .env**
+   ```bash
+   FRONTEND_URL=http://localhost:5173
+   ```
+
+2. **CORS Origins**
+   The backend accepts requests from:
+   - `http://localhost:5173` (Vite default)
+   - `http://localhost:5174` (Vite alternate)
+   - `http://localhost:5175` (Vite alternate)
+   - `http://localhost:4200` (Angular default)
+
+3. **API Base URL for Frontend**
+   ```javascript
+   const API_BASE_URL = 'http://localhost:8000/api';
+   ```
+
+4. **Authentication Flow**
+   - Frontend sends requests to `/api/auth/login/`
+   - Backend responds with token
+   - Frontend includes token in Authorization header: `Bearer <token>`
 
 ## 🏗️ Architecture & Technology Stack
 
@@ -153,12 +178,20 @@ docker-compose exec web black .
 
 ### Video Endpoints
 - `GET /api/videos/` - List all videos
-- `GET /api/videos/<id>/` - Get specific video
-- `GET /api/videos/<id>/stream/<resolution>/` - Stream video
-- `GET /api/videos/featured/` - Get featured videos
-- `GET /api/videos/by-genre/` - Get videos by genre
+- `GET /api/videos/<id>/` - Video details
+- `GET /api/videos/<id>/stream/` - Video streaming
 - `POST /api/videos/<id>/watch-progress/` - Update watch progress
 - `GET /api/videos/continue-watching/` - Get continue watching list
+- `GET /api/videos/featured/` - Get featured videos
+- `GET /api/videos/genres/` - Get video genres
+- `GET /api/videos/search/` - Search videos
+
+### Frontend Integration Notes
+- All endpoints return JSON responses
+- Authentication uses JWT tokens
+- Video streaming supports multiple resolutions
+- CORS is configured for local development
+- Email verification links point to frontend URLs
 
 ---
 
