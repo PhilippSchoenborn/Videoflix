@@ -2,6 +2,7 @@
 Admin configuration for videos app
 """
 from django.contrib import admin
+from django import forms
 from .models import Genre, Video, VideoFile, WatchProgress
 
 
@@ -24,7 +25,7 @@ class VideoAdmin(admin.ModelAdmin):
     list_filter = ('genre', 'is_featured', 'created_at')
     search_fields = ('title', 'description')
     ordering = ('-created_at',)
-    readonly_fields = ('created_at', 'updated_at')
+    readonly_fields = ('created_at', 'updated_at', 'duration', 'thumbnail')
     
     fieldsets = (
         ('Basic Information', {
@@ -34,7 +35,7 @@ class VideoAdmin(admin.ModelAdmin):
             'fields': ('thumbnail',)
         }),
         ('Settings', {
-            'fields': ('is_featured', 'duration')
+            'fields': ('is_featured',)
         }),
         ('Timestamps', {
             'fields': ('created_at', 'updated_at'),
@@ -43,16 +44,42 @@ class VideoAdmin(admin.ModelAdmin):
     )
 
 
-@admin.register(VideoFile)
-class VideoFileAdmin(admin.ModelAdmin):
-    """
-    Admin configuration for VideoFile
-    """
-    list_display = ('video', 'quality', 'file_size', 'is_processed', 'created_at')
-    list_filter = ('quality', 'is_processed', 'created_at')
-    search_fields = ('video__title',)
-    ordering = ('-created_at',)
-    readonly_fields = ('file_size', 'created_at')
+
+# Inline für VideoFile
+from django.contrib.admin import TabularInline
+
+
+# Eigenes ModelForm für VideoFileInline, damit file_size automatisch gesetzt wird
+class VideoFileInlineForm(forms.ModelForm):
+    class Meta:
+        model = VideoFile
+        fields = ['file']  # quality nicht auswählbar
+
+    def save(self, commit=True):
+        instance = super().save(commit=False)
+        # Qualität immer auf 'original' setzen
+        instance.quality = 'original'
+        # file_size setzen
+        if instance.file and hasattr(instance.file, 'size'):
+            instance.file_size = instance.file.size
+        elif instance.file and hasattr(instance.file, 'file'):
+            instance.file_size = instance.file.file.size
+        else:
+            instance.file_size = 0
+        if commit:
+            instance.save()
+        return instance
+
+class VideoFileInline(TabularInline):
+    model = VideoFile
+    form = VideoFileInlineForm
+    extra = 1
+    readonly_fields = ('file_size', 'created_at', 'quality', 'is_processed')
+    fields = ('file', 'quality', 'file_size', 'is_processed', 'created_at')
+    can_delete = True
+
+# VideoAdmin um Inline erweitern
+VideoAdmin.inlines = [VideoFileInline]
 
 
 @admin.register(WatchProgress)
