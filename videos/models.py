@@ -34,6 +34,16 @@ class Genre(models.Model):
 
 
 class Video(models.Model):
+    @property
+    def get_thumbnail_url(self):
+        """
+        Liefert die URL zum Thumbnail-Bild oder einen Platzhalter, falls nicht vorhanden.
+        """
+        if self.thumbnail and hasattr(self.thumbnail, 'url') and self.thumbnail.url:
+            return self.thumbnail.url
+        if self.thumbnail_url:
+            return self.thumbnail_url
+        return '/static/images/video-placeholder.png'
     """
     Main video model
     """
@@ -77,7 +87,9 @@ class Video(models.Model):
         help_text=_('Video genre')
     )
     duration = models.DurationField(
-        help_text=_('Video duration')
+        help_text=_('Video duration'),
+        null=True,
+        blank=True
     )
     age_rating = models.CharField(
         max_length=10,
@@ -109,6 +121,10 @@ class Video(models.Model):
             if quality in qualities:
                 return quality
         return None
+    
+    # Kein automatischer process_video_upload-Aufruf mehr hier – das übernimmt das Signal beim VideoFile
+
+
 
 
 class VideoFile(models.Model):
@@ -144,8 +160,25 @@ class VideoFile(models.Model):
         verbose_name = _('Video File')
         verbose_name_plural = _('Video Files')
     
+
+
     def __str__(self):
         return f"{self.video.title} - {self.quality}"
+
+
+
+# Signal-Handler am Ende der Datei
+from django.db.models.signals import post_save
+from django.dispatch import receiver
+
+@receiver(post_save, sender=VideoFile)
+def video_file_post_save(sender, instance, created, **kwargs):
+    # Nur beim ersten unverarbeiteten Upload process_video_upload asynchron starten
+    if created and not instance.is_processed:
+        from .utils import process_video_upload
+        from django_rq import get_queue
+        queue = get_queue('default')
+        queue.enqueue(process_video_upload, instance.video.id)
 
 
 class WatchProgress(models.Model):
