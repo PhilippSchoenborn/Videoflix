@@ -109,6 +109,7 @@ def verify_email_view(request, uidb64, token):
         verification_token = EmailVerificationToken.objects.get(token=token)
         user = verification_token.user
         user.is_email_verified = True
+        user.is_active = True
         user.save()
         verification_token.delete()
         return Response(
