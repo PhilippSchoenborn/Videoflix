@@ -111,11 +111,6 @@ const DashboardPage: React.FC = () => {
     loadDashboardData();
   }, [showToast]);
 
-  // Debug effect for selectedVideo
-  useEffect(() => {
-    // Video selection tracking (silent)
-  }, [selectedVideo]);
-
   // Handle video actions
   const handleVideoClick = (video: Video) => {
     setSelectedVideo(video);
