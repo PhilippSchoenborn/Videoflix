@@ -65,14 +65,18 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
         """
         Create user with validated data
         """
+        import logging
+        logger = logging.getLogger(__name__)
         validated_data.pop('password_confirm')
         user = User.objects.create_user(**validated_data)
-        # --- TEMPORÄR: User wird immer aktiviert und verifiziert, egal auf welcher Umgebung ---
-        user.is_active = True
+        logger.info(f"User created: {user.email} (default is_active={user.is_active}, is_email_verified={getattr(user, 'is_email_verified', None)})")
+        # User immer inaktiv und nicht verifiziert anlegen
+        user.is_active = False
         if hasattr(user, 'is_email_verified'):
-            user.is_email_verified = True
+            user.is_email_verified = False
+        logger.info(f"User set inactive/unverified: is_active={user.is_active}, is_email_verified={getattr(user, 'is_email_verified', None)}")
         user.save()
-        # --- ENDE TEMPORÄR ---
+        logger.info(f"User saved: {user.email} (is_active={user.is_active}, is_email_verified={getattr(user, 'is_email_verified', None)})")
         return user
 
 
