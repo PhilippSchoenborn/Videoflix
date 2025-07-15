@@ -60,3 +60,10 @@ def api_info(request):
             'admin': '/admin/'
         }
     })
+
+
+def test_thumbnails(request):
+    """View to display all videos and their thumbnails."""
+    from videos.models import Video
+    videos = Video.objects.all()
+    return render(request, 'core/test_thumbnails.html', {'videos': videos})
