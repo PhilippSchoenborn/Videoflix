@@ -161,7 +161,6 @@ htmlcov/
 
 # Node.js (if using)
 node_modules/
-!frontend/dist/
 
 # Ignore test and reference projects
 # project.Videoflix-main/

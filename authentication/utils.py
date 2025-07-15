@@ -39,7 +39,7 @@ def send_verification_email(user, verification_token):
     print(f"Verification email would be sent to {user.email} with token: {verification_token}")
     
     subject = 'Verify your Videoflix account'
-    verification_link = f"{settings.FRONTEND_URL}/verify-email/{verification_token}"
+    verification_link = f"http://localhost:8000/api/auth/verify-email/{verification_token}"
     
     html_message = render_to_string('authentication/emails/verification_email.html', {
         'user': user,
@@ -77,7 +77,7 @@ def send_password_reset_email(user, reset_token):
     Send password reset email to user
     """
     subject = 'Reset your Videoflix password'
-    reset_link = f"{settings.FRONTEND_URL}/reset-password/{reset_token}"
+    reset_link = f"http://localhost:8000/api/auth/reset-password/{reset_token}"
     
     html_message = render_to_string('authentication/emails/password_reset_email.html', {
         'user': user,

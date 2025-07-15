@@ -164,9 +164,8 @@ docker-compose exec web black .
 
 ## ✅ Definition of Done (DoD) – Checklist
 - [x] Docker setup & start works
-- [x] API URLs adapted for frontend
+- [x] API URLs implemented and documented
 - [x] Auth & streaming work flawlessly
-- [x] Responsive design (frontend) (frontend)
 - [x] Clean code (PEP8, logging instead of print, short functions)
 - [x] Extensive unit tests (happy/unhappy path)
 - [x] Test execution & coverage >80%
@@ -269,15 +268,6 @@ lsof -i :8000  # macOS/Linux
 netstat -ano | findstr :8000  # Windows
 
 # Kill process or change port in docker-compose.yml
-```
-
-#### Frontend Build Issues
-```bash
-# Clear Django cache
-docker-compose exec web python manage.py clearcache
-
-# Rebuild static files
-docker-compose exec web python manage.py collectstatic --clear --noinput
 ```
 
 ### Performance Optimization
