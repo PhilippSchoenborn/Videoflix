@@ -34,6 +34,9 @@ urlpatterns = [
     
     # Django RQ (background tasks)
     path('django-rq/', include('django_rq.urls')),
+    
+    # Test view
+    path('test-thumbnails/', views.test_thumbnails, name='test_thumbnails'),
 ]
 
 # Serve media files during development
