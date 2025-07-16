@@ -90,11 +90,11 @@ WSGI_APPLICATION = 'core.wsgi.application'
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.postgresql",
-        "NAME": "videoflix_db",
-        "USER": "videoflix_user",
-        "PASSWORD": "supersecretpassword",
-        "HOST": "db",  # Fix: Docker-Service-Name statt 'localhost'
-        "PORT": 5432
+        "NAME": os.environ.get("DB_NAME", default="videoflix_db"),
+        "USER": os.environ.get("DB_USER", default="videoflix_user"),
+        "PASSWORD": os.environ.get("DB_PASSWORD", default="supersecretpassword"),
+        "HOST": os.environ.get("DB_HOST", default="db"),
+        "PORT": os.environ.get("DB_PORT", default="5432"),
     }
 }
 
