@@ -44,10 +44,19 @@ password = os.environ.get('DJANGO_SUPERUSER_PASSWORD', 'adminpassword')
 if not User.objects.filter(username=username).exists():
     print(f"Creating superuser '{username}'...")
     # Korrekter Aufruf: username hier übergeben
-    User.objects.create_superuser(username=username, email=email, password=password)
+    user = User.objects.create_superuser(username=username, email=email, password=password)
+    # Set email verification
+    user.is_email_verified = True
+    user.save()
+    print(f"Verification email would be sent to {email} with token: (auto-verified)")
     print(f"Superuser '{username}' created.")
 else:
     print(f"Superuser '{username}' already exists.")
+    # Verify existing admin user
+    user = User.objects.get(username=username)
+    user.is_email_verified = True
+    user.save()
+    print(f"Admin user '{username}' verified.")
 EOF
 
 python manage.py rqworker default &
