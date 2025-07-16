@@ -3,7 +3,7 @@
 🔄 Videoflix Backend - Reset Script
 ==================================
 
-Dieses Script setzt das gesamte Backend zurück und behebt häufige Probleme.
+This script resets the entire backend and fixes common issues.
 """
 
 import subprocess
@@ -36,68 +36,68 @@ def print_header(message):
     print(f"{Colors.BOLD}{Colors.BLUE}{'='*60}{Colors.END}\n")
 
 def run_command(command, description):
-    """Führt ein Kommando aus und gibt den Status zurück"""
-    print_info(f"Führe aus: {description}")
+    """Executes a command and returns the status"""
+    print_info(f"Executing: {description}")
     try:
         result = subprocess.run(command, shell=True, capture_output=True, text=True)
         if result.returncode == 0:
-            print_success(f"{description} - Erfolgreich")
+            print_success(f"{description} - Successful")
             return True
         else:
-            print_error(f"{description} - Fehlgeschlagen: {result.stderr}")
+            print_error(f"{description} - Failed: {result.stderr}")
             return False
     except Exception as e:
-        print_error(f"{description} - Fehler: {str(e)}")
+        print_error(f"{description} - Error: {str(e)}")
         return False
 
 def reset_system():
-    """Setzt das gesamte System zurück"""
-    print_header("🔄 SYSTEM-RESET")
+    """Resets the entire system"""
+    print_header("🔄 SYSTEM RESET")
     
-    # 1. Container stoppen
-    run_command("docker-compose down", "Container stoppen")
+    # 1. Stop containers
+    run_command("docker-compose down", "Stop containers")
     
-    # 2. Volumes löschen
-    print_warning("Lösche alle Datenbank-Volumes (alle Daten gehen verloren!)")
-    run_command("docker-compose down -v", "Volumes löschen")
+    # 2. Delete volumes
+    print_warning("Deleting all database volumes (all data will be lost!)")
+    run_command("docker-compose down -v", "Delete volumes")
     
-    # 3. Docker-System bereinigen
-    run_command("docker system prune -f", "Docker-System bereinigen")
+    # 3. Clean Docker system
+    run_command("docker system prune -f", "Clean Docker system")
     
-    # 4. Container neu bauen
-    run_command("docker-compose up -d --build", "Container neu bauen")
+    # 4. Rebuild containers
+    run_command("docker-compose up -d --build", "Rebuild containers")
     
-    # 5. Warten
-    print_info("Warte auf Container-Start...")
+    # 5. Wait
+    print_info("Waiting for containers to start...")
     time.sleep(20)
     
-    # 6. Migrationen ausführen
-    run_command("docker-compose exec -T web python manage.py migrate", "Datenbank migrieren")
+    # 6. Run migrations
+    run_command("docker-compose exec -T web python manage.py migrate", "Migrate database")
     
-    # 7. Admin-User erstellen
-    run_command("docker-compose exec -T web python create_admin.py", "Admin-User erstellen")
+    # 7. Create admin user
+    run_command("docker-compose exec -T web python create_admin.py", "Create admin user")
     
-    # 8. Admin-User verifizieren
-    run_command("docker-compose exec -T web python verify_admin.py", "Admin-User verifizieren")
+    # 8. Verify admin user
+    run_command("docker-compose exec -T web python verify_admin.py", "Verify admin user")
     
-    print_header("✅ SYSTEM-RESET ABGESCHLOSSEN")
-    print_success("System wurde erfolgreich zurückgesetzt!")
+    print_header("✅ SYSTEM RESET COMPLETED")
+    print_success("System was successfully reset!")
     print("")
-    print("📋 Zugangsdaten:")
+    print("📋 Access credentials:")
     print("  • Backend: http://localhost:8000")
     print("  • Admin: http://localhost:8000/admin")
     print("  • Login: admin@test.com / admin123456")
 
 def main():
-    """Hauptfunktion"""
+    """Main function"""
     print_header("🔄 VIDEOFLIX BACKEND RESET")
-    print("Dieses Script setzt das gesamte Backend zurück.")
-    print_warning("WARNUNG: Alle Daten in der Datenbank gehen verloren!")
+    print("This script resets the entire backend.")
+    print_warning("WARNING: All data in the database will be lost!")
     
-    # Bestätigung
-    response = input(f"\n{Colors.YELLOW}Möchten Sie das System zurücksetzen? (j/n): {Colors.END}")
-    if response.lower() not in ['j', 'ja', 'y', 'yes']:
-        print("Reset abgebrochen.")
+    # Confirmation
+    response = input(f"\n{Colors.YELLOW}Do you want to reset the system? (y/n): {Colors.END}")
+    if response.lower() not in ['y', 'yes', 'j', 'ja']:
+        print("Reset cancelled.")
         return
     
     reset_system()

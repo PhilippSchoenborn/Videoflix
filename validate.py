@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 """
-🔍 Videoflix Backend - Validierungs-Script
+🔍 Videoflix Backend - Validation Script
 =========================================
 
-Prüft ob das Backend korrekt installiert und funktionsfähig ist.
+Checks if the backend is correctly installed and functional.
 """
 
 import requests
@@ -39,8 +39,8 @@ def print_header(message):
     print(f"{Colors.BOLD}{Colors.BLUE}{'='*60}{Colors.END}\n")
 
 def check_docker_containers():
-    """Prüft ob alle Docker-Container laufen"""
-    print_header("🐳 DOCKER-CONTAINER PRÜFEN")
+    """Checks if all Docker containers are running"""
+    print_header("🐳 CHECKING DOCKER CONTAINERS")
     
     try:
         result = subprocess.run(
@@ -50,7 +50,7 @@ def check_docker_containers():
         )
         
         if result.returncode != 0:
-            print_error("Docker-compose ist nicht verfügbar")
+            print_error("Docker-compose is not available")
             return False
         
         containers = []
@@ -67,42 +67,42 @@ def check_docker_containers():
             
             if service in required_services:
                 if state == 'running':
-                    print_success(f"Service '{service}' läuft")
+                    print_success(f"Service '{service}' is running")
                     running_services.append(service)
                 else:
-                    print_error(f"Service '{service}' ist nicht aktiv (Status: {state})")
+                    print_error(f"Service '{service}' is not active (Status: {state})")
         
         missing_services = set(required_services) - set(running_services)
         if missing_services:
-            print_error(f"Fehlende Services: {', '.join(missing_services)}")
+            print_error(f"Missing services: {', '.join(missing_services)}")
             return False
         
-        print_success("Alle Docker-Container laufen korrekt")
+        print_success("All Docker containers are running correctly")
         return True
         
     except Exception as e:
-        print_error(f"Fehler beim Prüfen der Container: {str(e)}")
+        print_error(f"Error checking containers: {str(e)}")
         return False
 
 def check_backend_api():
-    """Prüft ob das Backend-API erreichbar ist"""
-    print_header("🌐 BACKEND-API PRÜFEN")
+    """Checks if the backend API is reachable"""
+    print_header("🌐 CHECKING BACKEND API")
     
     base_url = "http://localhost:8000"
     
-    # Health-Check
+    # Health check
     try:
         response = requests.get(f"{base_url}/admin/", timeout=10)
         if response.status_code == 200:
-            print_success("Backend ist erreichbar")
+            print_success("Backend is reachable")
         else:
-            print_error(f"Backend antwortet mit Status {response.status_code}")
+            print_error(f"Backend responds with status {response.status_code}")
             return False
     except requests.exceptions.RequestException as e:
-        print_error(f"Backend ist nicht erreichbar: {str(e)}")
+        print_error(f"Backend is not reachable: {str(e)}")
         return False
     
-    # API-Endpoints prüfen
+    # Check API endpoints
     endpoints = [
         "/api/",
         "/api/register/",
@@ -113,29 +113,29 @@ def check_backend_api():
     for endpoint in endpoints:
         try:
             response = requests.get(f"{base_url}{endpoint}", timeout=5)
-            if response.status_code in [200, 405, 401]:  # 405 = Method not allowed ist OK
-                print_success(f"Endpoint {endpoint} ist verfügbar")
+            if response.status_code in [200, 405, 401]:  # 405 = Method not allowed is OK
+                print_success(f"Endpoint {endpoint} is available")
             else:
-                print_warning(f"Endpoint {endpoint} antwortet mit Status {response.status_code}")
+                print_warning(f"Endpoint {endpoint} responds with status {response.status_code}")
         except requests.exceptions.RequestException as e:
-            print_error(f"Endpoint {endpoint} ist nicht erreichbar: {str(e)}")
+            print_error(f"Endpoint {endpoint} is not reachable: {str(e)}")
     
     return True
 
 def check_admin_login():
-    """Prüft ob Admin-Login funktioniert"""
-    print_header("🔑 ADMIN-LOGIN PRÜFEN")
+    """Checks if admin login works"""
+    print_header("🔑 CHECKING ADMIN LOGIN")
     
     try:
         session = requests.Session()
         
-        # CSRF-Token holen
+        # Get CSRF token
         response = session.get("http://localhost:8000/admin/login/", timeout=10)
         if response.status_code != 200:
-            print_error("Admin-Login-Seite nicht erreichbar")
+            print_error("Admin login page not reachable")
             return False
         
-        # CSRF-Token extrahieren
+        # Extract CSRF token
         csrf_token = None
         for line in response.text.split('\n'):
             if 'csrfmiddlewaretoken' in line and 'value=' in line:
@@ -143,10 +143,10 @@ def check_admin_login():
                 break
         
         if not csrf_token:
-            print_error("CSRF-Token nicht gefunden")
+            print_error("CSRF token not found")
             return False
         
-        # Login-Versuch
+        # Login attempt
         login_data = {
             'username': 'admin@test.com',
             'password': 'admin123456',
@@ -161,19 +161,19 @@ def check_admin_login():
         )
         
         if response.status_code == 200 and '/admin/' in response.url:
-            print_success("Admin-Login funktioniert")
+            print_success("Admin login works")
             return True
         else:
-            print_error("Admin-Login fehlgeschlagen")
+            print_error("Admin login failed")
             return False
             
     except Exception as e:
-        print_error(f"Fehler beim Admin-Login: {str(e)}")
+        print_error(f"Error during admin login: {str(e)}")
         return False
 
 def check_database():
-    """Prüft die Datenbank-Verbindung"""
-    print_header("🗄️  DATENBANK PRÜFEN")
+    """Checks database connection"""
+    print_header("🗄️  CHECKING DATABASE")
     
     try:
         result = subprocess.run(
@@ -183,19 +183,19 @@ def check_database():
         )
         
         if result.returncode == 0:
-            print_success("Datenbank-Verbindung funktioniert")
+            print_success("Database connection works")
             return True
         else:
-            print_error(f"Datenbank-Problem: {result.stderr}")
+            print_error(f"Database problem: {result.stderr}")
             return False
             
     except Exception as e:
-        print_error(f"Fehler beim Datenbank-Check: {str(e)}")
+        print_error(f"Error during database check: {str(e)}")
         return False
 
 def check_files():
-    """Prüft wichtige Dateien"""
-    print_header("📁 DATEIEN PRÜFEN")
+    """Checks important files"""
+    print_header("📁 CHECKING FILES")
     
     required_files = [
         '.env',
@@ -210,12 +210,12 @@ def check_files():
     
     for file in required_files:
         if os.path.exists(file):
-            print_success(f"Datei {file} vorhanden")
+            print_success(f"File {file} exists")
         else:
-            print_error(f"Datei {file} fehlt")
+            print_error(f"File {file} missing")
             all_files_exist = False
     
-    # Ordner prüfen
+    # Check directories
     required_dirs = [
         'logs',
         'media',
@@ -226,16 +226,16 @@ def check_files():
     
     for dir in required_dirs:
         if os.path.exists(dir):
-            print_success(f"Ordner {dir} vorhanden")
+            print_success(f"Directory {dir} exists")
         else:
-            print_error(f"Ordner {dir} fehlt")
+            print_error(f"Directory {dir} missing")
             all_files_exist = False
     
     return all_files_exist
 
 def run_basic_tests():
-    """Führt grundlegende Tests aus"""
-    print_header("🧪 GRUNDLEGENDE TESTS")
+    """Runs basic tests"""
+    print_header("🧪 BASIC TESTS")
     
     try:
         result = subprocess.run(
@@ -245,62 +245,62 @@ def run_basic_tests():
         )
         
         if result.returncode == 0:
-            print_success("Grundlegende Tests erfolgreich")
+            print_success("Basic tests successful")
             return True
         else:
-            print_warning(f"Einige Tests fehlgeschlagen: {result.stderr}")
+            print_warning(f"Some tests failed: {result.stderr}")
             return False
             
     except Exception as e:
-        print_error(f"Fehler beim Ausführen der Tests: {str(e)}")
+        print_error(f"Error running tests: {str(e)}")
         return False
 
 def print_summary(results):
-    """Gibt eine Zusammenfassung aus"""
-    print_header("📊 VALIDIERUNGS-ZUSAMMENFASSUNG")
+    """Prints a summary"""
+    print_header("📊 VALIDATION SUMMARY")
     
     total_checks = len(results)
     passed_checks = sum(1 for result in results.values() if result)
     
-    print(f"Gesamte Prüfungen: {total_checks}")
-    print(f"Erfolgreich: {passed_checks}")
-    print(f"Fehlgeschlagen: {total_checks - passed_checks}")
+    print(f"Total checks: {total_checks}")
+    print(f"Successful: {passed_checks}")
+    print(f"Failed: {total_checks - passed_checks}")
     
     if passed_checks == total_checks:
-        print_success("\n🎉 ALLE PRÜFUNGEN ERFOLGREICH!")
-        print_success("Das Backend ist vollständig funktionsfähig!")
+        print_success("\n🎉 ALL CHECKS SUCCESSFUL!")
+        print_success("The backend is fully functional!")
     else:
-        print_error(f"\n❌ {total_checks - passed_checks} PRÜFUNGEN FEHLGESCHLAGEN!")
-        print_warning("Bitte beheben Sie die Probleme und führen Sie die Validierung erneut aus.")
+        print_error(f"\n❌ {total_checks - passed_checks} CHECKS FAILED!")
+        print_warning("Please fix the issues and run the validation again.")
     
     print("\n" + "="*60)
-    print("DETAILLIERTE ERGEBNISSE:")
+    print("DETAILED RESULTS:")
     print("="*60)
     
     for check, result in results.items():
-        status = "✅ ERFOLGREICH" if result else "❌ FEHLGESCHLAGEN"
+        status = "✅ SUCCESSFUL" if result else "❌ FAILED"
         print(f"{check}: {status}")
 
 def main():
-    """Hauptfunktion"""
-    print_header("🔍 VIDEOFLIX BACKEND VALIDIERUNG")
-    print("Prüft die vollständige Funktionsfähigkeit des Backends.")
+    """Main function"""
+    print_header("🔍 VIDEOFLIX BACKEND VALIDATION")
+    print("Checks the complete functionality of the backend.")
     
-    # Warten auf Container-Start
-    print_info("Warte auf Container-Start...")
+    # Wait for container startup
+    print_info("Waiting for containers to start...")
     time.sleep(3)
     
-    # Alle Prüfungen ausführen
+    # Run all checks
     results = {}
     
-    results["Docker-Container"] = check_docker_containers()
-    results["Wichtige Dateien"] = check_files()
-    results["Datenbank-Verbindung"] = check_database()
-    results["Backend-API"] = check_backend_api()
-    results["Admin-Login"] = check_admin_login()
-    results["Grundlegende Tests"] = run_basic_tests()
+    results["Docker Containers"] = check_docker_containers()
+    results["Important Files"] = check_files()
+    results["Database Connection"] = check_database()
+    results["Backend API"] = check_backend_api()
+    results["Admin Login"] = check_admin_login()
+    results["Basic Tests"] = run_basic_tests()
     
-    # Zusammenfassung
+    # Summary
     print_summary(results)
 
 if __name__ == "__main__":

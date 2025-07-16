@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
-Script zur Verifizierung und Aktivierung des Admin-Users.
-Aktiviert und verifiziert den Admin-User falls nötig.
+Script to verify and activate the admin user.
+Activates and verifies the admin user if needed.
 """
 
 import os
@@ -15,41 +15,41 @@ django.setup()
 User = get_user_model()
 
 def verify_admin():
-    """Aktiviert und verifiziert den Admin-User."""
+    """Activates and verifies the admin user."""
     
     try:
-        # Admin-User finden
+        # Find admin user
         admin_user = User.objects.get(username='admin')
         
-        # Status vor Änderung
-        print("📋 Status vor Verifizierung:")
-        print(f"   - Aktiv: {admin_user.is_active}")
+        # Status before changes
+        print("📋 Status before verification:")
+        print(f"   - Active: {admin_user.is_active}")
         print(f"   - Superuser: {admin_user.is_superuser}")
-        print(f"   - E-Mail verifiziert: {getattr(admin_user, 'is_email_verified', 'Attribut nicht vorhanden')}")
+        print(f"   - Email verified: {getattr(admin_user, 'is_email_verified', 'Attribute not available')}")
         
-        # Aktiviert Admin-User
+        # Activate admin user
         admin_user.is_active = True
         admin_user.is_superuser = True
         
-        # E-Mail-Verifizierung setzen (falls Attribut existiert)
+        # Set email verification (if attribute exists)
         if hasattr(admin_user, 'is_email_verified'):
             admin_user.is_email_verified = True
         
         admin_user.save()
         
-        print("\n✅ Admin-User erfolgreich verifiziert:")
+        print("\n✅ Admin user successfully verified:")
         print(f"   - Username: {admin_user.username}")
-        print(f"   - E-Mail: {admin_user.email}")
-        print(f"   - Aktiv: {admin_user.is_active}")
+        print(f"   - Email: {admin_user.email}")
+        print(f"   - Active: {admin_user.is_active}")
         print(f"   - Superuser: {admin_user.is_superuser}")
-        print(f"   - E-Mail verifiziert: {getattr(admin_user, 'is_email_verified', 'Attribut nicht vorhanden')}")
+        print(f"   - Email verified: {getattr(admin_user, 'is_email_verified', 'Attribute not available')}")
         
     except User.DoesNotExist:
-        print("❌ Admin-User 'admin' wurde nicht gefunden.")
-        print("💡 Führe zuerst 'python create_admin.py' aus.")
+        print("❌ Admin user 'admin' was not found.")
+        print("💡 Run 'python create_admin.py' first.")
         
     except Exception as e:
-        print(f"❌ Fehler beim Verifizieren des Admin-Users: {str(e)}")
+        print(f"❌ Error verifying admin user: {str(e)}")
 
 if __name__ == "__main__":
     verify_admin()

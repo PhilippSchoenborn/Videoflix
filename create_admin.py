@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
-Script zum Erstellen eines Admin-Users für das Videoflix-Projekt.
-Erstellt einen funktionierenden Admin-User mit korrekten Berechtigungen.
+Script to create an admin user for the Videoflix project.
+Creates a working admin user with correct permissions.
 """
 
 import os
@@ -15,19 +15,19 @@ django.setup()
 User = get_user_model()
 
 def create_admin():
-    """Erstellt einen Admin-User mit verifizierten Daten."""
+    """Creates an admin user with verified data."""
     
-    # Prüfen ob Admin-User bereits existiert
+    # Check if admin user already exists
     if User.objects.filter(username='admin').exists():
-        print("❌ Admin-User 'admin' existiert bereits.")
+        print("❌ Admin user 'admin' already exists.")
         return
     
     if User.objects.filter(email='admin@test.com').exists():
-        print("❌ Admin-User mit E-Mail 'admin@test.com' existiert bereits.")
+        print("❌ Admin user with email 'admin@test.com' already exists.")
         return
     
     try:
-        # Erstellt Admin-User mit korrekten Berechtigungen
+        # Create admin user with correct permissions
         admin_user = User.objects.create_superuser(
             username='admin',
             email='admin@test.com',
@@ -36,21 +36,21 @@ def create_admin():
             last_name='User'
         )
         
-        # E-Mail-Verifizierung setzen
+        # Set email verification
         admin_user.is_email_verified = True
         admin_user.is_active = True
         admin_user.save()
         
-        print("✅ Admin-User erfolgreich erstellt:")
+        print("✅ Admin user successfully created:")
         print(f"   - Username: {admin_user.username}")
-        print(f"   - E-Mail: {admin_user.email}")
-        print(f"   - Passwort: admin123456")
-        print(f"   - Aktiv: {admin_user.is_active}")
+        print(f"   - Email: {admin_user.email}")
+        print(f"   - Password: admin123456")
+        print(f"   - Active: {admin_user.is_active}")
         print(f"   - Superuser: {admin_user.is_superuser}")
-        print(f"   - E-Mail verifiziert: {admin_user.is_email_verified}")
+        print(f"   - Email verified: {admin_user.is_email_verified}")
         
     except Exception as e:
-        print(f"❌ Fehler beim Erstellen des Admin-Users: {str(e)}")
+        print(f"❌ Error creating admin user: {str(e)}")
 
 if __name__ == "__main__":
     create_admin()

@@ -1,235 +1,235 @@
 # 🎬 Videoflix - Django REST API Backend
 
-> **🎓 MENTOREN-ANLEITUNG: EINFACHE INSTALLATION**
+> **🎓 MENTOR GUIDE: SIMPLE INSTALLATION**
 > 
-> Dieses README ist speziell für Mentoren optimiert und enthält alle notwendigen Schritte für eine problemlose Installation und Bewertung des Projekts.
+> This README is specifically optimized for mentors and contains all necessary steps for a smooth installation and evaluation of the project.
 
-## 🚀 SOFORT-START (für Mentoren)
+## 🚀 QUICK START (for Mentors)
 
-### 📋 Voraussetzungen prüfen
-- ✅ **Docker Desktop** installiert und gestartet
-- ✅ **Git** installiert
-- ✅ **Windows PowerShell** oder Terminal
-- ✅ Mindestens 8GB RAM
+### 📋 Check Prerequisites
+- ✅ **Docker Desktop** installed and running
+- ✅ **Git** installed
+- ✅ **Windows PowerShell** or Terminal
+- ✅ At least 8GB RAM
 
-### ⚡ 1-KLICK-INSTALLATION
+### ⚡ 1-CLICK INSTALLATION
 
-1. **Repository klonen**
+1. **Clone repository**
    ```bash
    git clone https://github.com/PhilippSchoenborn/Videoflix.git
    cd Videoflix
    ```
 
-2. **Automatisches Setup ausführen**
+2. **Run automatic setup**
    ```bash
    python setup.py
    ```
    
-   **Das Script führt automatisch aus:**
-   - ✅ Systemanforderungen prüfen
-   - ✅ Docker-Container bauen
-   - ✅ Datenbank einrichten
-   - ✅ Admin-User erstellen
-   - ✅ Tests ausführen
+   **The script automatically performs:**
+   - ✅ Check system requirements
+   - ✅ Build Docker containers
+   - ✅ Set up database
+   - ✅ Create admin user
+   - ✅ Run tests
 
-3. **Fertig!** 🎉
+3. **Done!** 🎉
    - Backend: http://localhost:8000
    - Admin: http://localhost:8000/admin
    - Login: admin@test.com / admin123456
 
-### 🔧 MANUELLE INSTALLATION (falls Setup-Script nicht funktioniert)
+### 🔧 MANUAL INSTALLATION (if setup script doesn't work)
 
-1. **Container starten**
+1. **Start containers**
    ```bash
    docker-compose up -d --build
    ```
 
-2. **Datenbank einrichten**
+2. **Set up database**
    ```bash
    docker-compose exec web python manage.py migrate
    ```
 
-3. **Admin-User erstellen**
+3. **Create admin user**
    ```bash
    docker-compose exec web python create_admin.py
    ```
 
-4. **System testen**
+4. **Test system**
    ```bash
    docker-compose exec web python manage.py test
    ```
 
-## 📋 BEWERTUNGS-CHECKLISTE (für Mentoren)
+## 📋 EVALUATION CHECKLIST (for Mentors)
 
-### ✅ Backend-Funktionalität
-- [ ] Server startet ohne Fehler
-- [ ] Admin-Panel erreichbar (http://localhost:8000/admin)
-- [ ] API-Endpoints ansprechbar
-- [ ] Datenbank-Verbindung funktioniert
-- [ ] Tests laufen durch
+### ✅ Backend Functionality
+- [ ] Server starts without errors
+- [ ] Admin panel accessible (http://localhost:8000/admin)
+- [ ] API endpoints accessible
+- [ ] Database connection works
+- [ ] Tests run successfully
 
-### ✅ Authentifizierung
-- [ ] User-Registrierung funktioniert
-- [ ] Login/Logout funktioniert
-- [ ] E-Mail-Verifizierung implementiert
-- [ ] Password-Reset implementiert
+### ✅ Authentication
+- [ ] User registration works
+- [ ] Login/logout works
+- [ ] Email verification implemented
+- [ ] Password reset implemented
 
-### ✅ Code-Qualität
-- [ ] Django Best Practices befolgt
-- [ ] REST API korrekt implementiert
-- [ ] Dokumentation vorhanden
-- [ ] Tests vorhanden
+### ✅ Code Quality
+- [ ] Django best practices followed
+- [ ] REST API correctly implemented
+- [ ] Documentation available
+- [ ] Tests available
 
-## 🔑 ADMIN-ANMELDEDATEN
+## 🔑 ADMIN LOGIN CREDENTIALS
 
 ```
 URL: http://localhost:8000/admin
-E-Mail: admin@test.com
-Passwort: admin123456
+Email: admin@test.com
+Password: admin123456
 Username: admin
 ```
 
-## 🧪 TESTS AUSFÜHREN
+## 🧪 RUNNING TESTS
 
 ```bash
-# Alle Tests
+# All tests
 docker-compose exec web python manage.py test
 
-# Nur Authentication-Tests
+# Only authentication tests
 docker-compose exec web python manage.py test authentication
 
-# Nur Video-Tests
+# Only video tests
 docker-compose exec web python manage.py test videos
 
-# Mit Coverage
+# With coverage
 docker-compose exec web python -m pytest --cov=. --cov-report=html
 ```
 
-## 🐛 TROUBLESHOOTING (häufige Probleme)
+## 🐛 TROUBLESHOOTING (common issues)
 
-### Problem: Container starten nicht
+### Problem: Containers don't start
 ```bash
-# Alte Container stoppen
+# Stop old containers
 docker-compose down
 
-# System bereinigen
+# Clean system
 docker system prune -f
 
-# Neu starten
+# Restart
 docker-compose up -d --build
 ```
 
-### Problem: Datenbank-Fehler
+### Problem: Database errors
 ```bash
-# Container neu starten
+# Restart containers
 docker-compose restart db
 
-# Migrations erneut ausführen
+# Run migrations again
 docker-compose exec web python manage.py migrate
 ```
 
-### Problem: Admin-User funktioniert nicht
+### Problem: Admin user doesn't work
 ```bash
-# Neuen Admin erstellen
+# Create new admin
 docker-compose exec web python create_admin.py
 
-# Admin verifizieren
+# Verify admin
 docker-compose exec web python verify_admin.py
 ```
 
-## 📊 PROJEKT-STRUKTUR
+## 📊 PROJECT STRUCTURE
 
 ```
 videoflix-backend/
-├── 📁 authentication/          # User-Management
-├── 📁 videos/                  # Video-Verwaltung
-├── 📁 core/                    # Django-Konfiguration
-├── 📁 tests/                   # Umfassende Tests
-├── 📁 media/                   # Uploaded Files
-├── 📁 logs/                    # Log-Dateien
-├── 🐳 docker-compose.yml       # Docker-Konfiguration
-├── 📋 requirements.txt         # Python-Abhängigkeiten
-├── ⚙️  .env                    # Umgebungsvariablen
-├── 🚀 setup.py                 # Auto-Setup-Script
-└── 📖 README.md               # Diese Datei
+├── 📁 authentication/          # User management
+├── 📁 videos/                  # Video management
+├── 📁 core/                    # Django configuration
+├── 📁 tests/                   # Comprehensive tests
+├── 📁 media/                   # Uploaded files
+├── 📁 logs/                    # Log files
+├── 🐳 docker-compose.yml       # Docker configuration
+├── 📋 requirements.txt         # Python dependencies
+├── ⚙️  .env                    # Environment variables
+├── 🚀 setup.py                 # Auto-setup script
+└── 📖 README.md               # This file
 ```
 
-## 🔌 API-ENDPOINTS
+## 🔌 API ENDPOINTS
 
 ### Authentication
-- `POST /api/register/` - User registrieren
-- `POST /api/login/` - User anmelden
-- `POST /api/logout/` - User abmelden
-- `GET /api/profile/` - User-Profil abrufen
+- `POST /api/register/` - Register user
+- `POST /api/login/` - Login user
+- `POST /api/logout/` - Logout user
+- `GET /api/profile/` - Get user profile
 
 ### Videos
-- `GET /api/videos/` - Alle Videos abrufen
-- `POST /api/videos/` - Video hochladen
-- `GET /api/videos/{id}/` - Einzelnes Video
-- `PUT /api/videos/{id}/` - Video aktualisieren
+- `GET /api/videos/` - Get all videos
+- `POST /api/videos/` - Upload video
+- `GET /api/videos/{id}/` - Get single video
+- `PUT /api/videos/{id}/` - Update video
 
-## 🛠️ NÜTZLICHE BEFEHLE
+## 🛠️ USEFUL COMMANDS
 
 ```bash
-# Container-Status prüfen
+# Check container status
 docker-compose ps
 
-# Logs anzeigen
+# View logs
 docker-compose logs -f
 
-# Shell öffnen
+# Open shell
 docker-compose exec web python manage.py shell
 
-# Django-Commands
+# Django commands
 docker-compose exec web python manage.py <command>
 
-# Container stoppen
+# Stop containers
 docker-compose down
 
-# Datenbank löschen und neu erstellen
+# Delete database and recreate
 docker-compose down -v
 docker-compose up -d --build
 ```
 
-## 🎯 BEWERTUNGSKRITERIEN
+## 🎯 EVALUATION CRITERIA
 
-### Technische Umsetzung (40%)
-- ✅ Django REST Framework korrekt verwendet
-- ✅ Datenbank-Modelle gut strukturiert
-- ✅ API-Endpoints vollständig implementiert
-- ✅ Authentifizierung funktioniert
+### Technical Implementation (40%)
+- ✅ Django REST Framework used correctly
+- ✅ Database models well structured
+- ✅ API endpoints fully implemented
+- ✅ Authentication works
 
-### Code-Qualität (30%)
-- ✅ Clean Code Prinzipien
-- ✅ Kommentare und Dokumentation
-- ✅ Fehlerbehandlung
-- ✅ Django Best Practices
+### Code Quality (30%)
+- ✅ Clean code principles
+- ✅ Comments and documentation
+- ✅ Error handling
+- ✅ Django best practices
 
-### Funktionalität (20%)
-- ✅ Alle Features implementiert
-- ✅ Frontend-Integration möglich
-- ✅ File-Upload funktioniert
-- ✅ E-Mail-System implementiert
+### Functionality (20%)
+- ✅ All features implemented
+- ✅ Frontend integration possible
+- ✅ File upload works
+- ✅ Email system implemented
 
 ### Setup & Deployment (10%)
-- ✅ Docker-Konfiguration
-- ✅ Environment-Variablen
-- ✅ Installationsanleitung
-- ✅ Troubleshooting-Guide
+- ✅ Docker configuration
+- ✅ Environment variables
+- ✅ Installation guide
+- ✅ Troubleshooting guide
 
-## � SUPPORT
+## 📞 SUPPORT
 
-Bei Problemen:
-1. Schauen Sie in den Troubleshooting-Bereich
-2. Prüfen Sie die Logs: `docker-compose logs -f`
-3. Starten Sie das Setup-Script neu: `python setup.py`
+For issues:
+1. Check the troubleshooting section
+2. Check the logs: `docker-compose logs -f`
+3. Restart the setup script: `python setup.py`
 
 ---
 
-**Entwickelt von:** Philipp Schoenborn  
-**Datum:** 16.07.2025  
+**Developed by:** Philipp Schoenborn  
+**Date:** 16.07.2025  
 **Version:** 1.0.0  
-**Status:** ✅ Produktionsbereit
+**Status:** ✅ Production ready
 
 This backend is designed to work with a separate frontend application. To connect a frontend:
 
