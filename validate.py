@@ -176,6 +176,18 @@ def check_database():
     print_header("🗄️  DATENBANK PRÜFEN")
     
     try:
+        # Zuerst prüfen ob Container läuft
+        result = subprocess.run(
+            ["docker-compose", "ps", "--format", "json"],
+            capture_output=True,
+            text=True
+        )
+        
+        if result.returncode != 0:
+            print_error("Docker-compose ist nicht verfügbar")
+            return False
+        
+        # Datenbank-Check
         result = subprocess.run(
             ["docker-compose", "exec", "-T", "web", "python", "manage.py", "check", "--database", "default"],
             capture_output=True,
@@ -184,9 +196,23 @@ def check_database():
         
         if result.returncode == 0:
             print_success("Datenbank-Verbindung funktioniert")
+            
+            # Zusätzlich: Migrations-Status prüfen
+            migration_result = subprocess.run(
+                ["docker-compose", "exec", "-T", "web", "python", "manage.py", "showmigrations"],
+                capture_output=True,
+                text=True
+            )
+            
+            if migration_result.returncode == 0:
+                print_success("Migrations-Status OK")
+            else:
+                print_warning("Migrations-Problem erkannt")
+            
             return True
         else:
             print_error(f"Datenbank-Problem: {result.stderr}")
+            print_warning("Versuchen Sie: python reset.py")
             return False
             
     except Exception as e:

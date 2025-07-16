@@ -113,13 +113,30 @@ docker-compose exec web python -m pytest --cov=.
 
 ### Problem: Container starten nicht
 ```bash
-# Lösung 1: System bereinigen
+# Lösung 1: Vollständiger Reset (empfohlen)
+python reset.py
+
+# Lösung 2: Manuelle Bereinigung
 docker-compose down -v
 docker system prune -f
 docker-compose up -d --build
+```
 
-# Lösung 2: Docker neu starten
-# Docker Desktop neu starten
+### Problem: "role videoflix does not exist"
+```bash
+# Lösung: Kompletter Reset erforderlich
+python reset.py
+```
+
+### Problem: PostgreSQL-Verbindung schlägt fehl
+```bash
+# Lösung: Umgebungsvariablen prüfen
+# Stelle sicher, dass in der .env Datei stehen:
+# DB_HOST=db
+# DB_PORT=5432
+
+# Dann Reset durchführen
+python reset.py
 ```
 
 ### Problem: Admin-Login funktioniert nicht
@@ -164,6 +181,7 @@ docker-compose exec web python manage.py test
 
 # System-Diagnose
 python validate.py                # Vollständige Validierung
+python reset.py                   # Kompletter System-Reset
 docker-compose exec web python manage.py check
 curl -I http://localhost:8000/admin/
 ```

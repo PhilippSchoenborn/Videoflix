@@ -20,6 +20,17 @@ def create_admin():
     # Prüfen ob Admin-User bereits existiert
     if User.objects.filter(username='admin').exists():
         print("❌ Admin-User 'admin' existiert bereits.")
+        admin_user = User.objects.get(username='admin')
+        
+        # Prüfen ob User aktiviert ist
+        if not admin_user.is_active or not admin_user.is_email_verified:
+            print("⚠️  Admin-User existiert, aber ist nicht aktiviert. Aktiviere...")
+            admin_user.is_active = True
+            admin_user.is_email_verified = True
+            admin_user.save()
+            print("✅ Admin-User aktiviert!")
+        else:
+            print("✅ Admin-User ist bereits vollständig aktiviert.")
         return
     
     if User.objects.filter(email='admin@test.com').exists():

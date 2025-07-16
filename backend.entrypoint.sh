@@ -4,6 +4,17 @@ set -e
 
 echo "Warte auf PostgreSQL auf $DB_HOST:$DB_PORT..."
 
+# Prüfe ob DB_HOST und DB_PORT gesetzt sind
+if [ -z "$DB_HOST" ]; then
+  echo "❌ DB_HOST ist nicht gesetzt!"
+  exit 1
+fi
+
+if [ -z "$DB_PORT" ]; then
+  echo "❌ DB_PORT ist nicht gesetzt!"
+  exit 1
+fi
+
 # -q für "quiet" (keine Ausgabe außer Fehlern)
 # Die Schleife läuft, solange pg_isready *nicht* erfolgreich ist (Exit-Code != 0)
 while ! pg_isready -h "$DB_HOST" -p "$DB_PORT" -q; do

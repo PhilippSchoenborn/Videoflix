@@ -120,6 +120,10 @@ def build_containers():
     # Alte Container stoppen
     run_command("docker-compose down", "Alte Container stoppen")
     
+    # Volumes löschen bei Problemen
+    print_info("Bereinige Docker-Volumes...")
+    run_command("docker-compose down -v", "Docker-Volumes löschen")
+    
     # Container neu bauen
     success, output = run_command("docker-compose up -d --build", "Container bauen und starten")
     if not success:
@@ -128,7 +132,12 @@ def build_containers():
     
     # Warten bis Container bereit sind
     print_info("Warte auf Container-Start...")
-    time.sleep(10)
+    time.sleep(15)  # Erhöhte Wartezeit
+    
+    # Container-Status prüfen
+    success, output = run_command("docker-compose ps", "Container-Status prüfen", check_output=True)
+    print_info("Container-Status:")
+    print(output)
     
     return True
 

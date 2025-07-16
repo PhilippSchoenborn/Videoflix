@@ -17,16 +17,35 @@ if %errorlevel% neq 0 (
 echo Docker Desktop ist bereit!
 echo.
 
+echo Stoppe alte Container...
+docker-compose down
+
+echo.
+echo Bereinige Docker-Volumes...
+docker-compose down -v
+
+echo.
 echo Starte Docker Container...
 docker-compose up -d --build
 
 echo.
 echo Warte auf Container-Start...
-timeout /t 10 >nul
+timeout /t 20 >nul
+
+echo.
+echo Pruefe Container-Status...
+docker-compose ps
 
 echo.
 echo Richte Datenbank ein...
 docker-compose exec -T web python manage.py migrate
+if %errorlevel% neq 0 (
+    echo FEHLER: Datenbank-Migration fehlgeschlagen!
+    echo Versuche Container-Neustart...
+    docker-compose restart web
+    timeout /t 10 >nul
+    docker-compose exec -T web python manage.py migrate
+)
 
 echo.
 echo Erstelle Admin-User...
@@ -47,6 +66,8 @@ echo.
 echo  Admin-Anmeldedaten:
 echo  E-Mail: admin@test.com
 echo  Passwort: admin123456
+echo.
+echo  Bei Problemen fuehren Sie 'python reset.py' aus
 echo.
 echo  Druecken Sie eine Taste zum Beenden...
 pause >nul
