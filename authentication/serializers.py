@@ -40,9 +40,9 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
         Validate email uniqueness
         """
         if User.objects.filter(email=value).exists():
-            raise serializers.ValidationError(
-                "A user with this email already exists."
-            )
+            raise serializers.ValidationError({
+                'error': 'A user with this email already exists.'
+            })
         return value
 
     def validate(self, attrs):
@@ -52,13 +52,15 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
         password = attrs.get('password')
         password_confirm = attrs.get('password_confirm')
         if password != password_confirm:
-            raise serializers.ValidationError(
-                "Passwords do not match."
-            )
+            raise serializers.ValidationError({
+                'error': 'Passwords do not match.'
+            })
         # Validate password strength
         is_valid, error_message = validate_password_strength(password)
         if not is_valid:
-            raise serializers.ValidationError(error_message)
+            raise serializers.ValidationError({
+                'error': error_message
+            })
         return attrs
     
     def create(self, validated_data):
@@ -70,7 +72,8 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
         validated_data.pop('password_confirm')
         user = User.objects.create_user(**validated_data)
         logger.info(f"User created: {user.email} (default is_active={user.is_active}, is_email_verified={getattr(user, 'is_email_verified', None)})")
-        # User immer inaktiv und nicht verifiziert anlegen
+        
+        # User immer inaktiv und nicht verifiziert anlegen (für Email-Verifikation)
         user.is_active = False
         if hasattr(user, 'is_email_verified'):
             user.is_email_verified = False
@@ -107,21 +110,21 @@ class UserLoginSerializer(serializers.Serializer):
             )
             if not user:
                 logger.warning(f"Login failed for email: {email} (user not found or wrong password)")
-                raise serializers.ValidationError(
-                    "Invalid email or password."
-                )
+                raise serializers.ValidationError({
+                    'error': 'Invalid email or password.'
+                })
             if not user.is_email_verified and not BYPASS_EMAIL_VERIFICATION:
                 logger.warning(f"Login failed for email: {email} (email not verified)")
-                raise serializers.ValidationError(
-                    "Please verify your email before logging in."
-                )
+                raise serializers.ValidationError({
+                    'error': 'Please verify your email before logging in.'
+                })
             logger.info(f"Login successful for email: {email}")
             attrs['user'] = user
             return attrs
         logger.warning(f"Login failed: missing email or password (email={email})")
-        raise serializers.ValidationError(
-            "Both email and password are required."
-        )
+        raise serializers.ValidationError({
+            'error': 'Both email and password are required.'
+        })
 
 
 class PasswordResetRequestSerializer(serializers.Serializer):
@@ -154,12 +157,16 @@ class PasswordResetSerializer(serializers.Serializer):
         password_confirm = attrs.get('password_confirm')
         
         if password != password_confirm:
-            raise serializers.ValidationError({'non_field_errors': ['Password confirmation does not match.']})
+            raise serializers.ValidationError({
+                'error': 'Password confirmation does not match.'
+            })
         
         # Validate password strength
         is_valid, error_message = validate_password_strength(password)
         if not is_valid:
-            raise serializers.ValidationError(error_message)
+            raise serializers.ValidationError({
+                'error': error_message
+            })
         
         return attrs
 

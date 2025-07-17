@@ -35,10 +35,21 @@ class UserRegistrationView(generics.CreateAPIView):
     serializer_class = UserRegistrationSerializer
     permission_classes = [permissions.AllowAny]
     
-    def perform_create(self, serializer):
+    def create(self, request, *args, **kwargs):
         """
-        Create user and send verification email
+        Create user and handle validation errors
         """
+        serializer = self.get_serializer(data=request.data)
+        if not serializer.is_valid():
+            # Check for missing fields
+            errors = serializer.errors
+            if len(errors) > 1:
+                return Response({
+                    'error': 'Required fields are missing.'
+                }, status=status.HTTP_400_BAD_REQUEST)
+            else:
+                return Response(errors, status=status.HTTP_400_BAD_REQUEST)
+        
         user = serializer.save()
         
         # Create verification token
@@ -52,7 +63,10 @@ class UserRegistrationView(generics.CreateAPIView):
             verification_token
         )
         
-        return user
+        return Response({
+            'message': 'User created successfully. Please check your email to verify your account.',
+            'user': UserProfileSerializer(user).data
+        }, status=status.HTTP_201_CREATED)
 
 
 class UserLoginView(generics.GenericAPIView):
@@ -67,7 +81,23 @@ class UserLoginView(generics.GenericAPIView):
         Authenticate user and return token
         """
         serializer = self.get_serializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
+        if not serializer.is_valid():
+            # Check for missing fields
+            errors = serializer.errors
+            if 'email' in errors and 'password' in errors:
+                return Response({
+                    'error': 'Both email and password are required.'
+                }, status=status.HTTP_400_BAD_REQUEST)
+            elif 'email' in errors:
+                return Response({
+                    'error': 'Email is required.'
+                }, status=status.HTTP_400_BAD_REQUEST)
+            elif 'password' in errors:
+                return Response({
+                    'error': 'Password is required.'
+                }, status=status.HTTP_400_BAD_REQUEST)
+            else:
+                return Response(errors, status=status.HTTP_400_BAD_REQUEST)
         
         user = serializer.validated_data['user']
         token, created = Token.objects.get_or_create(user=user)
@@ -135,7 +165,10 @@ class PasswordResetRequestView(generics.GenericAPIView):
         Send password reset email if user exists
         """
         serializer = self.get_serializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
+        if not serializer.is_valid():
+            return Response({
+                'error': 'Email is required.'
+            }, status=status.HTTP_400_BAD_REQUEST)
         
         email = serializer.validated_data['email']
         
@@ -171,7 +204,22 @@ class PasswordResetView(generics.GenericAPIView):
         Reset user password with token
         """
         serializer = self.get_serializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
+        if not serializer.is_valid():
+            errors = serializer.errors
+            if 'token' in errors and 'password' in errors:
+                return Response({
+                    'error': 'Both token and password are required.'
+                }, status=status.HTTP_400_BAD_REQUEST)
+            elif 'token' in errors:
+                return Response({
+                    'error': 'Token is required.'
+                }, status=status.HTTP_400_BAD_REQUEST)
+            elif 'password' in errors:
+                return Response({
+                    'error': 'Password is required.'
+                }, status=status.HTTP_400_BAD_REQUEST)
+            else:
+                return Response(errors, status=status.HTTP_400_BAD_REQUEST)
         
         token = serializer.validated_data['token']
         password = serializer.validated_data['password']

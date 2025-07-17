@@ -4,6 +4,8 @@ Custom User Model for Videoflix Authentication
 from django.contrib.auth.models import AbstractUser
 from django.db import models
 from django.utils.translation import gettext_lazy as _
+from django.utils import timezone
+from datetime import timedelta
 
 
 class CustomUser(AbstractUser):
@@ -78,6 +80,12 @@ class EmailVerificationToken(models.Model):
     
     def __str__(self):
         return f"Verification token for {self.user.email}"
+    
+    def is_expired(self):
+        """
+        Check if the token has expired (24 hours)
+        """
+        return timezone.now() > self.created_at + timedelta(hours=24)
 
 
 class PasswordResetToken(models.Model):

@@ -570,7 +570,26 @@ docker-compose -f docker-compose.prod.yml build
 docker-compose -f docker-compose.prod.yml up -d
 ```
 
-## 📝 Contributing
+## � Documentation
+
+### Project Documentation
+- `README.md` - Main project documentation and installation guide
+- `MENTOREN-ANLEITUNG.md` - Detailed guide for mentors (German)
+- `tests/documentation/` - Development documentation and testing guides
+  - `EMAIL_VERIFICATION_GUIDE.md` - Complete email verification guide
+  - `ENHANCED_EMAIL_VERIFICATION.md` - Enhanced email system documentation
+  - `VIDEO_UPLOAD_FIX.md` - Video upload system fixes
+  - `PEP8_REPORT_angepasst.md` - Code style report
+  - And more development resources...
+
+### Email Verification System
+The project includes an enhanced dual email verification system:
+- **File-based email storage** in `logs/emails/`
+- **Terminal-based verification** for development
+
+See `tests/documentation/EMAIL_VERIFICATION_GUIDE.md` for complete usage instructions.
+
+## �📝 Contributing
 
 ### Code Style Guidelines
 - Follow PEP 8 for Python code

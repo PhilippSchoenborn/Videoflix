@@ -10,11 +10,17 @@ class UserRegistrationViewTests(TestCase):
         self.url = reverse('authentication:register')
         self.valid_payload = {
             'email': 'testuser@example.com',
+            'username': 'testuser',
+            'first_name': 'Test',
+            'last_name': 'User',
             'password': 'TestPassword123!',
             'password_confirm': 'TestPassword123!'
         }
         self.invalid_payload = {
             'email': 'testuser@example.com',
+            'username': 'testuser',
+            'first_name': 'Test',
+            'last_name': 'User',
             'password': 'TestPassword123!',
             'password_confirm': 'WrongPassword!'
         }
@@ -25,6 +31,10 @@ class UserRegistrationViewTests(TestCase):
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertTrue(CustomUser.objects.filter(email='testuser@example.com').exists())
         self.assertIn('message', response.data)
+        # Prüfe, dass User korrekt inaktiv/unverifiziert angelegt wurde
+        user = CustomUser.objects.get(email='testuser@example.com')
+        self.assertFalse(user.is_active)
+        self.assertFalse(user.is_email_verified)
 
     def test_register_user_password_mismatch(self):
         """Unhappy Path: Registration fails if passwords do not match"""
@@ -50,6 +60,10 @@ class UserLoginViewTests(TestCase):
         self.client = APIClient()
         self.url = reverse('authentication:login')
         self.user = CustomUser.objects.create_user(email='loginuser@example.com', username='loginuser', password='TestPassword123!')
+        # Für Login-Tests: User muss aktiv und verifiziert sein
+        self.user.is_active = True
+        self.user.is_email_verified = True
+        self.user.save()
         self.valid_payload = {
             'email': 'loginuser@example.com',
             'password': 'TestPassword123!'
@@ -89,11 +103,20 @@ class UserLogoutViewTests(TestCase):
     def setUp(self):
         self.client = APIClient()
         self.user = CustomUser.objects.create_user(email='logoutuser@example.com', username='logoutuser', password='TestPassword123!')
+        # Für Logout-Tests: User muss aktiv und verifiziert sein
+        self.user.is_active = True
+        self.user.is_email_verified = True
+        self.user.save()
         self.url = reverse('authentication:logout')
         self.client.force_authenticate(user=self.user)
 
     def test_logout_success(self):
         """Happy Path: Authenticated user can log out"""
+        # Token für den User erstellen
+        from rest_framework.authtoken.models import Token
+        token = Token.objects.create(user=self.user)
+        self.client.credentials(HTTP_AUTHORIZATION='Token ' + token.key)
+        
         response = self.client.post(self.url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertIn('message', response.data)

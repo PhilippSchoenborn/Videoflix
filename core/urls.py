@@ -23,6 +23,9 @@ from . import views
 urlpatterns = [
     path('admin/', admin.site.urls),
     
+    # API root endpoint
+    path('api/', views.api_root, name='api_root'),
+    
     # API endpoints direkt unter /api/
     path('api/', include('authentication.urls')),  # Alle Auth-Endpoints direkt unter /api/
     path('api/videos/', include('videos.urls')),             # Video-API

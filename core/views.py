@@ -7,6 +7,40 @@ from rest_framework.decorators import api_view
 from rest_framework.response import Response
 
 
+@api_view(['GET'])
+def api_root(request):
+    """
+    API root endpoint showing available endpoints
+    """
+    return Response({
+        'message': 'Welcome to Videoflix API',
+        'version': '1.0.0',
+        'endpoints': {
+            'authentication': {
+                'register': '/api/register/',
+                'login': '/api/login/',
+                'logout': '/api/logout/',
+                'profile': '/api/profile/',
+                'verify_email': '/api/verify-email/{token}/',
+                'password_reset': '/api/password_reset/',
+                'password_confirm': '/api/password_confirm/{token}/'
+            },
+            'videos': {
+                'list': '/api/videos/',
+                'detail': '/api/videos/{id}/',
+                'stream': '/api/videos/{id}/stream/{quality}/',
+                'qualities': '/api/videos/{id}/qualities/',
+                'progress': '/api/videos/{id}/progress/',
+                'genres': '/api/videos/genres/',
+                'featured': '/api/videos/featured/',
+                'by_genre': '/api/videos/by-genre/',
+                'continue_watching': '/api/videos/continue-watching/'
+            },
+            'health': '/api/health/'
+        }
+    })
+
+
 def impressum(request):
     """Legal notice / Impressum page."""
     context = {
