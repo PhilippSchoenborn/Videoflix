@@ -58,6 +58,24 @@ services:
       retries: 5
     restart: unless-stopped
 
+  worker:
+    build:
+      context: .
+      dockerfile: backend.Dockerfile
+    command: python manage.py rqworker default
+    volumes:
+      - .:/app
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    env_file:
+      - .env
+    networks:
+      - videoflix_network
+    restart: unless-stopped
+
 volumes:
   postgres_data:
 

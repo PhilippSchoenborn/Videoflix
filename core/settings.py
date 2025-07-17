@@ -226,7 +226,8 @@ CORS_ALLOWED_HEADERS = [
 ]
 
 # Email Configuration
-EMAIL_BACKEND = os.environ.get('EMAIL_BACKEND', default='django.core.mail.backends.console.EmailBackend')
+EMAIL_BACKEND = os.environ.get('EMAIL_BACKEND', default='django.core.mail.backends.filebased.EmailBackend')
+EMAIL_FILE_PATH = os.path.join(BASE_DIR, 'logs/emails')
 EMAIL_HOST = os.environ.get('EMAIL_HOST', default='smtp.example.com')
 EMAIL_PORT = int(os.environ.get('EMAIL_PORT', default=587))
 EMAIL_HOST_USER = os.environ.get('EMAIL_HOST_USER', default='')
