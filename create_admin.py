@@ -18,13 +18,14 @@ def create_admin():
     """Creates an admin user with verified data."""
     
     # Check if admin user already exists
-    if User.objects.filter(username='admin').exists():
-        print("❌ Admin user 'admin' already exists.")
-        return
+    admin_exists = User.objects.filter(username='admin').exists()
+    email_exists = User.objects.filter(email='admin@test.com').exists()
     
-    if User.objects.filter(email='admin@test.com').exists():
-        print("❌ Admin user with email 'admin@test.com' already exists.")
-        return
+    if admin_exists or email_exists:
+        print("✅ Admin user already exists - skipping creation")
+        print("📧 Login: admin@test.com")
+        print("🔑 Password: admin123456")
+        return True
     
     try:
         # Create admin user with correct permissions

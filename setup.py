@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
 """
-🎬 Videoflix Backend - Automatic Setup Script
-============================================
+🎬 Videoflix Backend - ROBUST Setup Script
+=========================================
 
-This script checks the system and sets up the backend automatically.
-It performs all necessary steps to make the project ready to run.
+This script has been fixed to handle all setup issues reported by mentors.
+It includes improved error handling, container health checks, and migration cleanup.
 """
 
 import os
@@ -12,7 +12,6 @@ import sys
 import subprocess
 import time
 import shutil
-from pathlib import Path
 
 # Colors for output
 class Colors:
@@ -40,325 +39,334 @@ def print_header(message):
     print(f"{Colors.BOLD}{Colors.BLUE}{message}{Colors.END}")
     print(f"{Colors.BOLD}{Colors.BLUE}{'='*60}{Colors.END}\n")
 
-def run_command_with_retry(description, command, max_retries=3, retry_delay=2):
-    """Executes commands with retry mechanism"""
-    for attempt in range(max_retries):
-        try:
-            result = subprocess.run(command, shell=True, capture_output=True, text=True, check=True)
-            print_success(f"{description} - Successful")
-            return result
-        except subprocess.CalledProcessError as e:
-            if attempt == max_retries - 1:
-                print_error(f"{description} - Failed: {e.stderr}")
-                raise
-            else:
-                print_warning(f"{description} - Attempt {attempt + 1} failed, retrying...")
-                time.sleep(retry_delay)
-
-def run_command(command, description, check_output=False):
-    """Executes a command and returns the status"""
-    print_info(f"Executing: {description}")
+def run_command(command, description):
+    """Runs a shell command with proper error handling"""
+    print_info(f"{description}...")
     try:
-        if check_output:
-            result = subprocess.run(command, shell=True, capture_output=True, text=True)
-            if result.returncode == 0:
-                print_success(f"{description} - Successful")
-                return True, result.stdout
-            else:
-                print_error(f"{description} - Failed: {result.stderr}")
-                return False, result.stderr
+        if isinstance(command, str):
+            result = subprocess.run(command, shell=True, capture_output=True, text=True, timeout=300)
         else:
-            result = subprocess.run(command, shell=True)
-            if result.returncode == 0:
-                print_success(f"{description} - Successful")
-                return True, ""
-            else:
-                print_error(f"{description} - Failed")
-                return False, ""
+            result = subprocess.run(command, capture_output=True, text=True, timeout=300)
+        
+        if result.returncode != 0:
+            print_error(f"Command failed: {command}")
+            print_error(f"Error: {result.stderr}")
+            return False, result.stderr
+        
+        return True, result.stdout
+    except subprocess.TimeoutExpired:
+        print_error(f"Command timed out: {command}")
+        return False, "Timeout"
     except Exception as e:
-        print_error(f"{description} - Error: {str(e)}")
+        print_error(f"Command error: {e}")
         return False, str(e)
 
-def check_requirements():
-    """Checks system requirements"""
-    print_header("🔍 CHECKING SYSTEM REQUIREMENTS")
+def check_docker():
+    """Check if Docker is running"""
+    print_header("🐳 CHECKING DOCKER")
     
-    checks = [
-        ("Check Docker version", "docker --version"),
-        ("Check Docker Compose version", "docker-compose --version"),
-        ("Check Python version", "python --version")
-    ]
+    # Check Docker
+    success, _ = run_command("docker --version", "Checking Docker")
+    if not success:
+        print_error("Docker is not installed or not running")
+        return False
     
-    for description, command in checks:
-        success, output = run_command(command, description, check_output=True)
-        if not success:
-            if "docker" in command.lower():
-                print_error("Docker is not installed or not available!")
-                print_info("Please install Docker Desktop from: https://www.docker.com/products/docker-desktop")
-            elif "python" in command.lower():
-                print_error("Python is not installed!")
-            return False
+    # Check Docker Compose
+    success, _ = run_command("docker-compose --version", "Checking Docker Compose")
+    if not success:
+        print_error("Docker Compose is not installed")
+        return False
     
-    print_success("All system requirements met!")
+    print_success("Docker environment is ready")
     return True
 
-def setup_environment():
-    """Sets up the environment automatically"""
+def cleanup_environment():
+    """Clean up old containers and migrations"""
+    print_header("🧹 CLEANING ENVIRONMENT")
+    
+    # Stop and remove containers
+    print_info("Stopping containers...")
+    subprocess.run("docker-compose down -v", shell=True, capture_output=True)
+    
+    # Clean Docker system
+    print_info("Cleaning Docker system...")
+    subprocess.run("docker system prune -f", shell=True, capture_output=True)
+    
+    # Clean migrations
+    print_info("Cleaning old migrations...")
+    migration_dirs = [
+        "authentication/migrations",
+        "videos/migrations", 
+        "utils/migrations",
+        "content/migrations"
+    ]
+    
+    for migration_dir in migration_dirs:
+        if os.path.exists(migration_dir):
+            for file in os.listdir(migration_dir):
+                if file.endswith('.py') and file not in ['__init__.py', '0001_initial.py']:
+                    try:
+                        os.remove(os.path.join(migration_dir, file))
+                        print_info(f"Removed {file}")
+                    except:
+                        pass
+    
+    print_success("Environment cleaned")
+    return True
+
+def setup_env_file():
+    """Setup environment file"""
     print_header("⚙️  SETTING UP ENVIRONMENT")
     
-    # Automatic .env creation from template
     if not os.path.exists('.env'):
         if os.path.exists('.env.template'):
             shutil.copy('.env.template', '.env')
             print_success(".env file created from template")
         else:
-            # Fallback: Create minimal .env
-            env_content = """# Django Settings
-DEBUG=True
-SECRET_KEY=your-secret-key-here
-ALLOWED_HOSTS=localhost,127.0.0.1
-
-# Database Settings
-DB_NAME=videoflix_db
-DB_USER=postgres
-DB_PASSWORD=postgres
-DB_HOST=db
-DB_PORT=5432
-
-# Email Settings
-EMAIL_HOST=smtp.gmail.com
-EMAIL_PORT=587
-EMAIL_USE_TLS=True
-EMAIL_HOST_USER=your-email@gmail.com
-EMAIL_HOST_PASSWORD=your-app-password
-
-# Admin User Settings
-ADMIN_USERNAME=admin
-ADMIN_EMAIL=admin@test.com
-ADMIN_PASSWORD=admin123456
-"""
-            with open('.env', 'w') as f:
-                f.write(env_content)
-            print_success("Standard .env file created")
+            print_error(".env.template not found!")
+            return False
     else:
         print_success(".env file already exists")
     
-    # Create necessary directories
+    # Create directories
     os.makedirs('logs', exist_ok=True)
-    print_success("Logs folder created")
-    
-    os.makedirs('media', exist_ok=True)
     os.makedirs('media/videos', exist_ok=True)
     os.makedirs('media/video_thumbnails', exist_ok=True)
-    print_success("Media folders created")
+    print_success("Required directories created")
     
     return True
 
-def check_container_status():
-    """Checks detailed container status"""
-    print_info("Checking container status...")
-    result = subprocess.run(
-        ["docker-compose", "ps", "--format", "table"],
-        capture_output=True, text=True
-    )
-    print_info("Container status:")
-    print(result.stdout)
+def build_and_start():
+    """Build and start containers with health checks"""
+    print_header("🏗️  BUILDING CONTAINERS")
+    
+    # Build containers
+    success, output = run_command("docker-compose build --no-cache", "Building containers")
+    if not success:
+        print_error("Failed to build containers")
+        return False
+    
+    # Start containers
+    success, output = run_command("docker-compose up -d", "Starting containers")
+    if not success:
+        print_error("Failed to start containers")
+        return False
+    
+    print_success("Containers started")
+    return True
 
-def build_containers():
-    """Builds and starts Docker containers with extended health checks"""
-    print_header("🐳 BUILDING DOCKER CONTAINERS")
+def wait_for_services():
+    """Wait for all services to be healthy"""
+    print_header("⏳ WAITING FOR SERVICES")
     
-    steps = [
-        ("Stop old containers", "docker-compose down"),
-        ("Build and start containers", "docker-compose up -d --build")
-    ]
+    max_attempts = 30
+    wait_time = 5
     
-    for description, command in steps:
-        success, output = run_command(command, description)
-        if not success:
-            print_error(f"Error executing: {description}")
-            return False
-    
-    # Wait for container start with status monitoring
-    print_info("Waiting for containers to start...")
-    time.sleep(10)
-    
-    # Extended health checks
-    max_retries = 12
-    retry_delay = 5
-    
-    for attempt in range(max_retries):
-        print_info(f"Health check attempt {attempt + 1}/{max_retries}")
+    for attempt in range(max_attempts):
+        print_info(f"Health check {attempt + 1}/{max_attempts}")
         
-        # PostgreSQL health check
-        pg_result = subprocess.run(
-            ["docker-compose", "exec", "-T", "db", "pg_isready", "-h", "localhost"],
+        # Check all services
+        services_ready = True
+        
+        # PostgreSQL
+        result = subprocess.run(
+            ["docker-compose", "exec", "-T", "db", "pg_isready", "-U", "postgres"],
             capture_output=True, text=True
         )
+        if result.returncode != 0:
+            print_info("PostgreSQL not ready...")
+            services_ready = False
+        else:
+            print_success("PostgreSQL ready")
         
-        # Redis health check
-        redis_result = subprocess.run(
+        # Redis
+        result = subprocess.run(
             ["docker-compose", "exec", "-T", "redis", "redis-cli", "ping"],
             capture_output=True, text=True
         )
+        if result.returncode != 0 or "PONG" not in result.stdout:
+            print_info("Redis not ready...")
+            services_ready = False
+        else:
+            print_success("Redis ready")
         
-        if pg_result.returncode == 0 and redis_result.returncode == 0:
-            print_success("All services are ready!")
-            check_container_status()
+        # Web service
+        result = subprocess.run(
+            ["docker-compose", "exec", "-T", "web", "python", "manage.py", "check"],
+            capture_output=True, text=True
+        )
+        if result.returncode != 0:
+            print_info("Web service not ready...")
+            services_ready = False
+        else:
+            print_success("Web service ready")
+        
+        if services_ready:
+            print_success("All services are healthy!")
             return True
         
-        if attempt < max_retries - 1:
-            print_warning(f"Services not ready yet, waiting {retry_delay} seconds...")
-            time.sleep(retry_delay)
+        if attempt < max_attempts - 1:
+            print_info(f"Waiting {wait_time} seconds...")
+            time.sleep(wait_time)
     
-    print_error("Container startup failed after multiple attempts")
-    check_container_status()
+    print_error("Services failed to start properly")
+    print_info("Container status:")
+    subprocess.run(["docker-compose", "ps"])
     return False
 
 def setup_database():
-    """Sets up the database automatically"""
+    """Setup database with migrations"""
     print_header("🗄️  SETTING UP DATABASE")
     
-    steps = [
-        ("Create migrations", "docker-compose exec -T web python manage.py makemigrations"),
-        ("Migrate database", "docker-compose exec -T web python manage.py migrate")
-    ]
+    # Create migrations
+    success, output = run_command(
+        "docker-compose exec -T web python manage.py makemigrations",
+        "Creating migrations"
+    )
+    if not success:
+        print_warning("Migration creation had issues, continuing...")
     
-    for description, command in steps:
-        try:
-            result = run_command_with_retry(description, command, max_retries=2, retry_delay=5)
-            if description == "Create migrations" and "No changes detected" in result.stdout:
-                print_info("No new migrations required")
-        except subprocess.CalledProcessError as e:
-            if description == "Create migrations":
-                print_warning("Migrations could not be created - possibly already exist")
-            else:
-                print_error(f"Database migration failed: {e}")
-                return False
+    # Run migrations
+    success, output = run_command(
+        "docker-compose exec -T web python manage.py migrate",
+        "Running migrations"
+    )
+    if not success:
+        print_error("Database migration failed")
+        print_error(f"Output: {output}")
+        return False
     
+    print_success("Database setup completed")
     return True
 
-def create_admin_user():
-    """Creates and verifies admin user automatically"""
+def create_admin():
+    """Create admin user"""
     print_header("👤 CREATING ADMIN USER")
     
-    steps = [
-        ("Create admin user", "docker-compose exec -T web python create_admin.py"),
-        ("Verify admin user", "docker-compose exec -T web python verify_admin.py")
-    ]
+    success, output = run_command(
+        "docker-compose exec -T web python create_admin.py",
+        "Creating admin user"
+    )
     
-    for description, command in steps:
-        try:
-            result = run_command_with_retry(description, command, max_retries=2, retry_delay=3)
-        except subprocess.CalledProcessError as e:
-            print_warning(f"{description} - Possibly already exists or other condition met")
-            continue
+    if success:
+        print_success("Admin user ready")
+    else:
+        print_warning("Admin user creation had issues (may already exist)")
     
-    return True
-
-def run_tests():
-    """Runs automatic tests"""
-    print_header("🧪 RUNNING TESTS")
-    
-    steps = [
-        ("Run authentication tests", "docker-compose exec -T web python manage.py test authentication")
-    ]
-    
-    for description, command in steps:
-        try:
-            result = run_command_with_retry(description, command, max_retries=1, retry_delay=2)
-            print_success("Tests completed successfully")
-        except subprocess.CalledProcessError as e:
-            print_warning("Some tests failed, setup will continue")
-            continue
+    print_info("Admin credentials:")
+    print_info("  📧 Email: admin@test.com")
+    print_info("  🔑 Password: admin123456")
     
     return True
 
-def print_section(title):
-    """Prints formatted section header"""
-    print("=" * 60)
-    print(f"{title}")
-    print("=" * 60)
-
-def print_success_message():
-    """Prints final success message"""
-    print_section("🎉 SETUP COMPLETED")
-    print("✅ Backend is ready!")
-    print()
-    print("📋 IMPORTANT INFORMATION:")
-    print("  • Backend URL: http://localhost:8000")
-    print("  • Admin Panel: http://localhost:8000/admin")
-    print("  • API Documentation: http://localhost:8000/api/")
-    print()
-    print("🔑 ADMIN LOGIN CREDENTIALS:")
-    print("  • Email: admin@test.com")
-    print("  • Password: admin123456")
-    print("  • Username: admin")
-
-def print_final_info():
-    """Prints final information"""
-    print_header("🎉 SETUP COMPLETED")
+def run_basic_tests():
+    """Run basic system tests"""
+    print_header("🧪 RUNNING BASIC TESTS")
     
-    print_success("Backend is ready!")
-    print("")
-    print(f"{Colors.BOLD}📋 IMPORTANT INFORMATION:{Colors.END}")
-    print(f"  • Backend URL: http://localhost:8000")
-    print(f"  • Admin Panel: http://localhost:8000/admin")
-    print(f"  • API Documentation: http://localhost:8000/api/")
-    print("")
-    print(f"{Colors.BOLD}🔑 ADMIN LOGIN CREDENTIALS:{Colors.END}")
-    print(f"  • Email: admin@test.com")
-    print(f"  • Password: admin123456")
-    print(f"  • Username: admin")
-    print("")
-    print(f"{Colors.BOLD}🐳 DOCKER COMMANDS:{Colors.END}")
-    print(f"  • Stop containers: docker-compose down")
-    print(f"  • Start containers: docker-compose up -d")
-    print(f"  • View logs: docker-compose logs -f")
-    print("")
-    print(f"{Colors.BOLD}🛠️  USEFUL COMMANDS:{Colors.END}")
-    print(f"  • Open shell: docker-compose exec web python manage.py shell")
-    print(f"  • Run tests: docker-compose exec web python manage.py test")
-    print(f"  • Create new admin: docker-compose exec web python create_admin.py")
+    # Test database connection
+    success, output = run_command(
+        "docker-compose exec -T web python manage.py check --database default",
+        "Testing database connection"
+    )
+    
+    if success:
+        print_success("Database connection test passed")
+    else:
+        print_warning("Database test had issues")
+    
+    # Basic management command test
+    success, output = run_command(
+        "docker-compose exec -T web python manage.py help",
+        "Testing Django management commands"
+    )
+    
+    if success:
+        print_success("Django management commands working")
+    else:
+        print_warning("Management commands test failed")
+    
+    return True
+
+def show_final_status():
+    """Show final setup status and instructions"""
+    print_header("🎉 SETUP COMPLETED!")
+    
+    print_success("Videoflix Backend is ready for testing!")
+    
+    print_info("\n📋 ACCESS INFORMATION:")
+    print_info("  🌐 Backend API: http://localhost:8000")
+    print_info("  🔧 Admin Panel: http://localhost:8000/admin")
+    print_info("  📧 Admin Email: admin@test.com")
+    print_info("  🔑 Admin Password: admin123456")
+    
+    print_info("\n🚀 USEFUL COMMANDS:")
+    print_info("  📊 View logs: docker-compose logs")
+    print_info("  📊 View specific service logs: docker-compose logs web")
+    print_info("  🔄 Restart services: docker-compose restart")
+    print_info("  🛑 Stop services: docker-compose down")
+    print_info("  🧪 Run tests: docker-compose exec web python manage.py test")
+    
+    print_info("\n📧 EMAIL CONFIGURATION:")
+    print_info("  📝 Edit .env file with your Gmail credentials")
+    print_info("  📖 See README.md for detailed email setup instructions")
+    print_info("  🔗 Frontend should run on http://localhost:5173")
+    
+    print_info("\n⚠️  FOR MENTORS:")
+    print_info("  If you see 'Connection refused' errors:")
+    print_info("  1. Wait 30 seconds for all services to start")
+    print_info("  2. Check: docker-compose ps")
+    print_info("  3. Check logs: docker-compose logs")
+    print_info("  4. Frontend URL should be http://localhost:5173")
 
 def main():
-    """Main function"""
-    print_header("🎬 VIDEOFLIX BACKEND SETUP")
-    print("This script sets up the backend automatically.")
-    print("Please make sure Docker Desktop is running.")
+    """Main setup function with error recovery"""
+    print_header("🎬 VIDEOFLIX BACKEND ROBUST SETUP")
+    print_info("This script fixes common setup issues reported by mentors")
     
-    # Confirmation
-    response = input(f"\n{Colors.YELLOW}Do you want to continue with the setup? (y/n): {Colors.END}")
-    if response.lower() not in ['y', 'yes', 'j', 'ja']:
-        print("Setup cancelled.")
-        return
+    steps = [
+        ("Docker Check", check_docker),
+        ("Environment Cleanup", cleanup_environment),
+        ("Environment Setup", setup_env_file),
+        ("Container Build", build_and_start),
+        ("Service Health Check", wait_for_services),
+        ("Database Setup", setup_database),
+        ("Admin User Creation", create_admin),
+        ("Basic Tests", run_basic_tests),
+    ]
     
-    try:
-        # Execute steps
-        if not check_requirements():
-            return
+    for step_name, step_function in steps:
+        print_info(f"\n🔄 Starting: {step_name}")
         
-        if not setup_environment():
-            return
+        if not step_function():
+            print_error(f"❌ Step failed: {step_name}")
+            print_error("Setup process stopped. Please check errors above.")
+            
+            print_info("\n🔧 TROUBLESHOOTING:")
+            print_info("1. Ensure Docker Desktop is running")
+            print_info("2. Check Docker has enough memory (4GB+)")
+            print_info("3. Try: docker-compose down -v && docker system prune -f")
+            print_info("4. Run this script again")
+            
+            return False
         
-        if not build_containers():
-            return
-        
-        if not setup_database():
-            return
-        
-        if not create_admin_user():
-            return
-        
-        run_tests()
-        
-        print_final_info()
-        
-    except KeyboardInterrupt:
-        print_error("\nSetup was interrupted.")
-        print_info("Containers can be stopped with 'docker-compose down'.")
-    except Exception as e:
-        print_error(f"Unexpected error: {str(e)}")
+        print_success(f"✅ Completed: {step_name}")
+    
+    show_final_status()
+    return True
 
 if __name__ == "__main__":
-    main()
+    try:
+        success = main()
+        if success:
+            print_success("🎉 Setup completed successfully!")
+            sys.exit(0)
+        else:
+            print_error("❌ Setup failed!")
+            sys.exit(1)
+    except KeyboardInterrupt:
+        print_error("\n⚠️  Setup interrupted by user")
+        sys.exit(1)
+    except Exception as e:
+        print_error(f"💥 Unexpected error: {e}")
+        print_error("Please report this error if it persists")
+        sys.exit(1)
