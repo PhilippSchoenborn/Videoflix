@@ -122,7 +122,7 @@ class Video(models.Model):
                 return quality
         return None
     
-    # Kein automatischer process_video_upload-Aufruf mehr hier – das übernimmt das Signal beim VideoFile
+    # No automatic process_video_upload call here - handled by signals in VideoFile
 
 
 

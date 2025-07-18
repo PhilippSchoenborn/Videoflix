@@ -225,16 +225,28 @@ CORS_ALLOWED_HEADERS = [
     'x-requested-with',
 ]
 
-# Email Configuration
-EMAIL_BACKEND = os.environ.get('EMAIL_BACKEND', default='core.email_backend.DevelopmentEmailBackend')
-EMAIL_FILE_PATH = os.path.join(BASE_DIR, 'logs/emails')
-EMAIL_HOST = os.environ.get('EMAIL_HOST', default='smtp.example.com')
+# Email Configuration - DIRECT SMTP (PRODUCTION-READY)
+# Direct connection to external SMTP providers for real email delivery
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+
+# Email Server Settings (from environment variables)
+EMAIL_HOST = os.environ.get('EMAIL_HOST', default='smtp.gmail.com')
 EMAIL_PORT = int(os.environ.get('EMAIL_PORT', default=587))
 EMAIL_HOST_USER = os.environ.get('EMAIL_HOST_USER', default='')
 EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD', default='')
 EMAIL_USE_TLS = os.environ.get('EMAIL_USE_TLS', default='True').lower() == 'true'
 EMAIL_USE_SSL = os.environ.get('EMAIL_USE_SSL', default='False').lower() == 'true'
-DEFAULT_FROM_EMAIL = os.environ.get('DEFAULT_FROM_EMAIL', default='noreply@videoflix.com')
+DEFAULT_FROM_EMAIL = os.environ.get('DEFAULT_FROM_EMAIL', default='videoflix@example.com')
+
+# Backend URL for activation links in email verification
+BACKEND_URL = os.environ.get('BACKEND_URL', default='http://localhost:8000')
+
+print(f"🔧 DIRECT SMTP CONFIG: {EMAIL_HOST}:{EMAIL_PORT} TLS:{EMAIL_USE_TLS}")
+print(f"🎯 EMAIL_BACKEND: {EMAIL_BACKEND}")
+print(f"📧 FROM_EMAIL: {DEFAULT_FROM_EMAIL}")
+
+# Fallback: Email file storage for development/testing (commented out)
+# EMAIL_FILE_PATH = os.path.join(BASE_DIR, 'logs/emails')
 
 # Custom User Model
 AUTH_USER_MODEL = 'authentication.CustomUser'

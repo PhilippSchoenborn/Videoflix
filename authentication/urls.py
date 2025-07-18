@@ -7,6 +7,7 @@ from .views import (
     UserLoginView,
     user_logout_view,
     verify_email_view,
+    verify_email_token_view,
     PasswordResetRequestView,
     PasswordResetView,
     UserProfileView
@@ -19,6 +20,7 @@ urlpatterns = [
     path('register/', UserRegistrationView.as_view(), name='register'),
     path('logout/', user_logout_view, name='logout'),
     path('activate/<str:uidb64>/<str:token>/', verify_email_view, name='activate'),
+    path('verify-email/<str:token>/', verify_email_token_view, name='verify_email_token'),
     path('password_reset/', PasswordResetRequestView.as_view(), name='password_reset_request'),
     path('password_confirm/<str:uidb64>/<str:token>/', PasswordResetView.as_view(), name='password_reset'),
     path('profile/', UserProfileView.as_view(), name='profile'),

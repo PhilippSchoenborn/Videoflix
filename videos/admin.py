@@ -45,19 +45,19 @@ class VideoAdmin(admin.ModelAdmin):
 
 
 
-# Inline für VideoFile
+# Inline for VideoFile
 from django.contrib.admin import TabularInline
 
 
-# Eigenes ModelForm für VideoFileInline, damit file_size automatisch gesetzt wird
+# Custom ModelForm for VideoFileInline, so file_size is set automatically
 class VideoFileInlineForm(forms.ModelForm):
     class Meta:
         model = VideoFile
-        fields = ['file']  # quality nicht auswählbar
+        fields = ['file']  # quality not selectable
 
     def save(self, commit=True):
         instance = super().save(commit=False)
-        # Qualität immer auf 'original' setzen
+        # Always set quality to 'original'
         instance.quality = 'original'
         # file_size setzen
         if instance.file and hasattr(instance.file, 'size'):

@@ -49,7 +49,7 @@ class CustomUserAdmin(UserAdmin):
             user.is_active = True
             user.is_email_verified = True
             user.save()
-        self.message_user(request, "Ausgewählte User wurden aktiviert und verifiziert.")
+        self.message_user(request, "Selected users have been activated and verified.")
 
 
 @admin.register(EmailVerificationToken)

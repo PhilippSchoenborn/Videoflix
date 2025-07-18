@@ -31,7 +31,7 @@ class UserRegistrationViewTests(TestCase):
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertTrue(CustomUser.objects.filter(email='testuser@example.com').exists())
         self.assertIn('message', response.data)
-        # Prüfe, dass User korrekt inaktiv/unverifiziert angelegt wurde
+        # Check that user was correctly created as inactive/unverified
         user = CustomUser.objects.get(email='testuser@example.com')
         self.assertFalse(user.is_active)
         self.assertFalse(user.is_email_verified)
@@ -60,7 +60,7 @@ class UserLoginViewTests(TestCase):
         self.client = APIClient()
         self.url = reverse('authentication:login')
         self.user = CustomUser.objects.create_user(email='loginuser@example.com', username='loginuser', password='TestPassword123!')
-        # Für Login-Tests: User muss aktiv und verifiziert sein
+        # For login tests: User must be active and verified
         self.user.is_active = True
         self.user.is_email_verified = True
         self.user.save()
@@ -103,7 +103,7 @@ class UserLogoutViewTests(TestCase):
     def setUp(self):
         self.client = APIClient()
         self.user = CustomUser.objects.create_user(email='logoutuser@example.com', username='logoutuser', password='TestPassword123!')
-        # Für Logout-Tests: User muss aktiv und verifiziert sein
+        # For logout tests: User must be active and verified
         self.user.is_active = True
         self.user.is_email_verified = True
         self.user.save()
@@ -112,7 +112,7 @@ class UserLogoutViewTests(TestCase):
 
     def test_logout_success(self):
         """Happy Path: Authenticated user can log out"""
-        # Token für den User erstellen
+        # Create token for the user
         from rest_framework.authtoken.models import Token
         token = Token.objects.create(user=self.user)
         self.client.credentials(HTTP_AUTHORIZATION='Token ' + token.key)
@@ -161,7 +161,7 @@ class PasswordResetViewTests(TestCase):
 
     def test_password_reset_passwords_match(self):
         """Happy Path: Passwords match and reset is successful (simulate)"""
-        # Hier müsste ein echter Token-Flow getestet werden, dies ist ein Platzhalter
+        # Here a real token flow should be tested, this is a placeholder
         response = self.client.post(self.url, self.valid_payload, format='json')
         self.assertIn(response.status_code, [status.HTTP_200_OK, status.HTTP_400_BAD_REQUEST])
 

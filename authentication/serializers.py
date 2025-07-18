@@ -73,7 +73,7 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
         user = User.objects.create_user(**validated_data)
         logger.info(f"User created: {user.email} (default is_active={user.is_active}, is_email_verified={getattr(user, 'is_email_verified', None)})")
         
-        # User immer inaktiv und nicht verifiziert anlegen (für Email-Verifikation)
+        # Always create user as inactive and unverified (for email verification)
         user.is_active = False
         if hasattr(user, 'is_email_verified'):
             user.is_email_verified = False

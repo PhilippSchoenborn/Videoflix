@@ -4,6 +4,7 @@ Django management command for email verification management
 from django.core.management.base import BaseCommand
 from django.contrib.auth import get_user_model
 from authentication.models import EmailVerificationToken
+from authentication.utils import send_verification_email
 from django.utils import timezone
 from django.conf import settings
 import os
@@ -50,6 +51,11 @@ class Command(BaseCommand):
             action='store_true',
             help='Remove expired tokens and old email files'
         )
+        parser.add_argument(
+            '--resend',
+            type=str,
+            help='Resend verification email to user by email address'
+        )
 
     def handle(self, *args, **options):
         if options['list_tokens']:
@@ -64,6 +70,8 @@ class Command(BaseCommand):
             self.show_email_content(options['show_email'])
         elif options['cleanup']:
             self.cleanup_old_data()
+        elif options['resend']:
+            self.resend_verification_email(options['resend'])
         else:
             self.show_help()
 
@@ -78,11 +86,13 @@ class Command(BaseCommand):
         self.stdout.write(f"  {Fore.GREEN}--list-emails{Style.RESET_ALL}     : List all email files")
         self.stdout.write(f"  {Fore.GREEN}--show-email FILE{Style.RESET_ALL} : Show email file content")
         self.stdout.write(f"  {Fore.GREEN}--cleanup{Style.RESET_ALL}         : Remove expired tokens and old emails")
+        self.stdout.write(f"  {Fore.GREEN}--resend EMAIL{Style.RESET_ALL}    : Resend verification email to user")
         self.stdout.write(f"\n{Fore.YELLOW}Examples:{Style.RESET_ALL}")
         self.stdout.write(f"  python manage.py verify_email --list-tokens")
         self.stdout.write(f"  python manage.py verify_email --verify user@example.com")
         self.stdout.write(f"  python manage.py verify_email --verify-token abc123def456")
         self.stdout.write(f"  python manage.py verify_email --list-emails")
+        self.stdout.write(f"  python manage.py verify_email --resend user@example.com")
         self.stdout.write("")
 
     def list_tokens(self):
@@ -236,3 +246,35 @@ class Command(BaseCommand):
             self.stdout.write(f"  - Removed {removed_files} old email files")
         else:
             self.stdout.write(f"{Fore.GREEN}🧹 Removed {expired_count} expired tokens{Style.RESET_ALL}")
+
+    def resend_verification_email(self, email):
+        """Resend verification email to user"""
+        try:
+            user = User.objects.get(email=email)
+        except User.DoesNotExist:
+            self.stdout.write(f"{Fore.RED}❌ User with email {email} not found{Style.RESET_ALL}")
+            return
+        
+        if user.is_active:
+            self.stdout.write(f"{Fore.YELLOW}⚠️ User {email} is already verified and active{Style.RESET_ALL}")
+            return
+        
+        # Get existing token or create new one
+        try:
+            token = EmailVerificationToken.objects.get(user=user)
+            self.stdout.write(f"{Fore.BLUE}📧 Using existing verification token for {email}{Style.RESET_ALL}")
+        except EmailVerificationToken.DoesNotExist:
+            # Create new token
+            token = EmailVerificationToken.objects.create(user=user)
+            self.stdout.write(f"{Fore.BLUE}📧 Created new verification token for {email}{Style.RESET_ALL}")
+        
+        # Send the email
+        try:
+            email_sent = send_verification_email(user, token)
+            if email_sent:
+                self.stdout.write(f"{Fore.GREEN}✅ Verification email sent successfully to {email}{Style.RESET_ALL}")
+                self.stdout.write(f"{Fore.CYAN}🔗 Verification URL: http://localhost:5173/verify-email/{token.token}{Style.RESET_ALL}")
+            else:
+                self.stdout.write(f"{Fore.RED}❌ Failed to send verification email to {email}{Style.RESET_ALL}")
+        except Exception as e:
+            self.stdout.write(f"{Fore.RED}❌ Error sending email to {email}: {e}{Style.RESET_ALL}")

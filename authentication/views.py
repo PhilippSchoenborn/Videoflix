@@ -1,6 +1,7 @@
 """
 Authentication views for user registration, login, logout, etc.
 """
+import logging
 from rest_framework import status, generics, permissions
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
@@ -8,6 +9,8 @@ from rest_framework.authtoken.models import Token
 from django.contrib.auth import login, logout, get_user_model
 from django.shortcuts import get_object_or_404
 from django_rq import get_queue
+
+logger = logging.getLogger(__name__)
 
 from .serializers import (
     UserRegistrationSerializer,
@@ -52,19 +55,21 @@ class UserRegistrationView(generics.CreateAPIView):
         
         user = serializer.save()
         
-        # Create verification token
+        # Create verification token and send email
         verification_token = create_verification_token(user)
         
-        # Send verification email asynchronously
-        queue = get_queue('default')
-        queue.enqueue(
-            send_verification_email,
-            user,
-            verification_token
-        )
+        # Send verification email directly (will use appropriate backend)
+        email_sent = send_verification_email(user, verification_token)
+        
+        if email_sent:
+            logger.info(f"User {user.email} registered successfully, verification email sent")
+            message = 'User created successfully. Please check your email to verify your account.'
+        else:
+            logger.warning(f"User {user.email} registered but verification email failed")
+            message = 'User created successfully. However, there was an issue sending the verification email. Please contact support.'
         
         return Response({
-            'message': 'User created successfully. Please check your email to verify your account.',
+            'message': message,
             'user': UserProfileSerializer(user).data
         }, status=status.HTTP_201_CREATED)
 
@@ -133,7 +138,7 @@ def user_logout_view(request):
 @permission_classes([permissions.AllowAny])
 def verify_email_view(request, uidb64, token):
     """
-    Email verification endpoint
+    Email verification endpoint with uidb64 and token
     """
     try:
         verification_token = EmailVerificationToken.objects.get(token=token)
@@ -151,6 +156,45 @@ def verify_email_view(request, uidb64, token):
             {'error': 'Invalid verification token'},
             status=status.HTTP_400_BAD_REQUEST
         )
+
+@api_view(['GET'])
+@permission_classes([permissions.AllowAny])
+def verify_email_token_view(request, token):
+    """
+    Email verification endpoint with automatic redirect to frontend login
+    """
+    from django.shortcuts import redirect
+    from django.conf import settings
+    
+    try:
+        verification_token = EmailVerificationToken.objects.get(token=token)
+        
+        if verification_token.is_expired():
+            # Redirect to frontend with error
+            frontend_url = getattr(settings, 'FRONTEND_URL', 'http://localhost:5173')
+            return redirect(f"{frontend_url}/login?verification=expired")
+        
+        user = verification_token.user
+        
+        # Activate user and verify email
+        user.is_active = True
+        if hasattr(user, 'is_email_verified'):
+            user.is_email_verified = True
+        user.save()
+        
+        # Remove verification token
+        verification_token.delete()
+        
+        logger.info(f"✅ User {user.email} verified successfully via web interface (is_active={user.is_active}, is_email_verified={getattr(user, 'is_email_verified', None)})")
+        
+        # Redirect to frontend login page with success message
+        frontend_url = getattr(settings, 'FRONTEND_URL', 'http://localhost:5173')
+        return redirect(f"{frontend_url}/login?verification=success&email={user.email}")
+        
+    except EmailVerificationToken.DoesNotExist:
+        # Redirect to frontend with error
+        frontend_url = getattr(settings, 'FRONTEND_URL', 'http://localhost:5173')
+        return redirect(f"{frontend_url}/login?verification=invalid")
 
 
 class PasswordResetRequestView(generics.GenericAPIView):
@@ -176,13 +220,14 @@ class PasswordResetRequestView(generics.GenericAPIView):
             user = User.objects.get(email=email)
             reset_token = create_password_reset_token(user)
             
-            # Send reset email asynchronously
-            queue = get_queue('default')
-            queue.enqueue(
-                send_password_reset_email,
-                user,
-                reset_token
-            )
+            # Send reset email directly (will use appropriate backend)
+            email_sent = send_password_reset_email(user, reset_token)
+            
+            if email_sent:
+                logger.info(f"Password reset email sent successfully to {user.email}")
+            else:
+                logger.warning(f"Failed to send password reset email to {user.email}")
+                
         except User.DoesNotExist:
             pass  # Don't reveal if email exists
         

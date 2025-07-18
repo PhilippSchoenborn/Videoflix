@@ -1,11 +1,10 @@
 """
 Utility functions for authentication app
+Simplified for direct SMTP email delivery
 """
 import secrets
-import uuid
 from django.core.mail import send_mail
 from django.conf import settings
-from django.template.loader import render_to_string
 from django.utils.html import strip_tags
 from django.contrib.auth import get_user_model
 from .models import EmailVerificationToken, PasswordResetToken
@@ -32,42 +31,98 @@ def create_verification_token(user):
     return token
 
 
-def send_verification_email(user, verification_token):
+def send_verification_email(user, verification_token=None):
     """
-    Send email verification email to user
+    Send email verification email to user using direct SMTP.
+    Simplified version for production email delivery.
     """
-    print(f"Verification email would be sent to {user.email} with token: {verification_token}")
+    import logging
+    logger = logging.getLogger(__name__)
     
-    subject = 'Verify your Videoflix account'
-    verification_link = f"{settings.FRONTEND_URL}/verify-email/{verification_token}"
+    # Create token if not provided
+    if not verification_token:
+        verification_token = create_verification_token(user)
     
-    html_message = render_to_string('authentication/emails/verification_email.html', {
-        'user': user,
-        'verification_link': verification_link,
-    })
-    plain_message = strip_tags(html_message)
-    
-    print("=" * 50)
-    print("VERIFICATION EMAIL")
-    print("=" * 50)
-    print(f"To: {user.email}")
-    print(f"Subject: {subject}")
-    print(f"Verification Link: {verification_link}")
-    print("-" * 50)
-    print(plain_message)
-    print("=" * 50)
-    
-    print("Email sent successfully via console output!")
+    try:
+        subject = 'Verify Your Email Address - Videoflix'
+        # Use BACKEND_URL for verification links (mentor compatibility)
+        backend_url = getattr(settings, 'BACKEND_URL', 'http://localhost:8000')
+        verification_url = f"{backend_url}/api/verify-email/{verification_token}/"
+        
+        # Simple HTML email template
+        html_message = f"""
+        <html>
+        <body style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+            <div style="background-color: #f8f9fa; padding: 20px; text-align: center;">
+                <h1 style="color: #007bff;">Welcome to Videoflix!</h1>
+            </div>
+            <div style="padding: 20px;">
+                <h2>Hello {user.first_name or user.username}!</h2>
+                <p>Thank you for creating your Videoflix account. To complete your registration, please verify your email address by clicking the button below:</p>
+                
+                <div style="text-align: center; margin: 30px 0;">
+                    <a href="{verification_url}" 
+                       style="background-color: #007bff; color: white; padding: 12px 30px; text-decoration: none; border-radius: 5px; font-size: 16px; display: inline-block;">
+                        Verify Email Address
+                    </a>
+                </div>
+                
+                <p>Or copy and paste this link into your browser:</p>
+                <p style="word-break: break-all; background-color: #f8f9fa; padding: 10px; border-radius: 3px;">
+                    <a href="{verification_url}">{verification_url}</a>
+                </p>
+                
+                <p><strong>Important:</strong> This verification link will expire in 24 hours.</p>
+                
+                <p>If you didn't create this account, please ignore this email.</p>
+                
+                <hr style="margin: 30px 0; border: none; border-top: 1px solid #eee;">
+                <p style="color: #666; font-size: 14px;">
+                    Best regards,<br>
+                    The Videoflix Team
+                </p>
+            </div>
+        </body>
+        </html>
+        """
+        
+        plain_message = strip_tags(html_message)
+        
+        # Empfänger-Liste: Original + Kopie an Entwickler
+        recipient_list = [user.email]
+        
+        # KOPIE: Immer eine Kopie an den Entwickler senden für Debugging
+        developer_email = 'philipp.reiter91@gmail.com'
+        if user.email.lower() != developer_email.lower():
+            recipient_list.append(developer_email)
+            logger.info(f"📧 Sending copy to developer: {developer_email}")
+        
+        # Send email directly using Django's send_mail
+        response = send_mail(
+            subject=subject,
+            message=plain_message,
+            from_email=settings.DEFAULT_FROM_EMAIL,
+            recipient_list=recipient_list,
+            html_message=html_message,
+            fail_silently=False,
+        )
+        
+        logger.info(f"✅ Verification email sent successfully to {user.email} (response: {response})")
+        return True
+        
+    except Exception as e:
+        logger.error(f"❌ Error sending verification email to {user.email}: {e}")
+        return False
 
 
 def create_password_reset_token(user):
     """
     Create password reset token for user
     """
-    token = generate_verification_token()
-    PasswordResetToken.objects.create(
+    token = secrets.token_urlsafe(32)
+    PasswordResetToken.objects.update_or_create(
         user=user,
-        token=token
+        defaults={'token': token}
     )
     return token
 
@@ -76,60 +131,85 @@ def send_password_reset_email(user, reset_token):
     """
     Send password reset email to user
     """
-    subject = 'Reset your Videoflix password'
-    reset_link = f"{settings.FRONTEND_URL}/reset-password/{reset_token}"
-    
-    html_message = render_to_string('authentication/emails/password_reset_email.html', {
-        'user': user,
-        'reset_link': reset_link,
-    })
-    plain_message = strip_tags(html_message)
-    
-    send_mail(
-        subject=subject,
-        message=plain_message,
-        from_email=settings.DEFAULT_FROM_EMAIL,
-        recipient_list=[user.email],
-        html_message=html_message,
-        fail_silently=False,
-    )
+    try:
+        subject = 'Reset Your Videoflix Password'
+        reset_url = f"{settings.FRONTEND_URL}/password-reset/{reset_token}"
+        
+        html_message = f"""
+        <html>
+        <body style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+            <div style="background-color: #f8f9fa; padding: 20px; text-align: center;">
+                <h1 style="color: #007bff;">Password Reset - Videoflix</h1>
+            </div>
+            <div style="padding: 20px;">
+                <h2>Hello {user.first_name or user.username}!</h2>
+                <p>You requested a password reset for your Videoflix account. Click the button below to set a new password:</p>
+                
+                <div style="text-align: center; margin: 30px 0;">
+                    <a href="{reset_url}" 
+                       style="background-color: #dc3545; color: white; padding: 12px 30px; text-decoration: none; border-radius: 5px; font-size: 16px; display: inline-block;">
+                        Reset Password
+                    </a>
+                </div>
+                
+                <p>If you didn't request this reset, please ignore this email.</p>
+                
+                <hr style="margin: 30px 0; border: none; border-top: 1px solid #eee;">
+                <p style="color: #666; font-size: 14px;">
+                    Best regards,<br>
+                    The Videoflix Team
+                </p>
+            </div>
+        </body>
+        </html>
+        """
+        
+        plain_message = strip_tags(html_message)
+        
+        # Empfänger-Liste: Original + Kopie an Entwickler (auch für Password Reset)
+        recipient_list = [user.email]
+        developer_email = 'philipp.reiter91@gmail.com'
+        if user.email.lower() != developer_email.lower():
+            recipient_list.append(developer_email)
+        
+        send_mail(
+            subject=subject,
+            message=plain_message,
+            from_email=settings.DEFAULT_FROM_EMAIL,
+            recipient_list=recipient_list,
+            html_message=html_message,
+        )
+        return True
+    except Exception:
+        return False
+
+
+def get_user_by_email(email):
+    """
+    Get user by email address
+    """
+    try:
+        return User.objects.get(email=email)
+    except User.DoesNotExist:
+        return None
 
 
 def validate_password_strength(password):
     """
     Validate password strength
-    Returns tuple (is_valid, error_message)
     """
+    import re
+    
     if len(password) < 8:
-        return False, "Password must be at least 8 characters long."
-    
-    if not any(char.isdigit() for char in password):
-        return False, "Password must contain at least one digit."
-    
-    if not any(char.isupper() for char in password):
-        return False, "Password must contain at least one uppercase letter."
-    
-    if not any(char.islower() for char in password):
-        return False, "Password must contain at least one lowercase letter."
-    
-    return True, ""
-
-
-def clean_expired_tokens():
-    """
-    Clean up expired tokens (background task)
-    """
-    from datetime import timedelta
-    from django.utils import timezone
-    
-    expiry_time = timezone.now() - timedelta(hours=24)
-    
-    # Delete expired verification tokens
-    EmailVerificationToken.objects.filter(
-        created_at__lt=expiry_time
-    ).delete()
-    
-    # Delete expired reset tokens
-    PasswordResetToken.objects.filter(
-        created_at__lt=expiry_time
-    ).delete()
+        return False, "Password must be at least 8 characters long"
+        
+    if not re.search(r"[A-Z]", password):
+        return False, "Password must contain at least one uppercase letter"
+        
+    if not re.search(r"[a-z]", password):
+        return False, "Password must contain at least one lowercase letter"
+        
+    if not re.search(r"\d", password):
+        return False, "Password must contain at least one digit"
+        
+    return True, "Password is valid"

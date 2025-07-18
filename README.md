@@ -59,7 +59,57 @@
    docker-compose exec web python manage.py test
    ```
 
-## 📋 EVALUATION CHECKLIST (for Mentors)
+## � EMAIL CONFIGURATION (Optional but Recommended)
+
+> **For mentors:** The system works perfectly without email setup, but for **real email delivery** during testing, follow these steps:
+
+### 🚀 Quick Email Setup for Real Delivery
+
+1. **Copy configuration template:**
+   ```bash
+   cp .env.template .env
+   ```
+
+2. **For Gmail (Most reliable):**
+   - Open `.env` file in editor
+   - Replace these values:
+   ```bash
+   EMAIL_HOST_USER=your-gmail@gmail.com
+   EMAIL_HOST_PASSWORD=your-app-password  # See below for App Password
+   DEFAULT_FROM_EMAIL=your-gmail@gmail.com
+   ```
+
+3. **Get Gmail App Password:**
+   - Go to [Google Account Security](https://myaccount.google.com/security)
+   - Enable **2-Factor Authentication** (required)
+   - Go to **App passwords** → Generate new → Select "Mail"
+   - Copy the 16-character password to `.env`
+
+4. **Alternative: Outlook/Hotmail:**
+   ```bash
+   # In .env file, uncomment and configure:
+   EMAIL_HOST=smtp-mail.outlook.com
+   EMAIL_HOST_USER=your-outlook@outlook.com
+   EMAIL_HOST_PASSWORD=your-outlook-password
+   ```
+
+5. **Test real email delivery:**
+   ```bash
+   # Register with your real email
+   curl -X POST http://localhost:8000/auth/register/ \
+     -H "Content-Type: application/json" \
+     -d '{"email": "your-email@gmail.com", "password": "Test123!", "password_confirm": "Test123!"}'
+   
+   # Check your inbox for verification email!
+   ```
+
+### 💡 For Mentors: Email Testing Notes
+- **Without setup:** Email content visible in Docker logs
+- **With setup:** Real emails delivered to any address
+- **Developer copies:** All emails automatically copied to project owner
+- **Frontend integration:** Email verification redirects to login page with success message
+
+## �📋 EVALUATION CHECKLIST (for Mentors)
 
 ### ✅ Backend Functionality
 - [ ] Server starts without errors
@@ -574,7 +624,7 @@ docker-compose -f docker-compose.prod.yml up -d
 
 ### Project Documentation
 - `README.md` - Main project documentation and installation guide
-- `MENTOREN-ANLEITUNG.md` - Detailed guide for mentors (German)
+- `MENTOR_GUIDE.md` - Detailed guide for mentors
 - `tests/documentation/` - Development documentation and testing guides
   - `EMAIL_VERIFICATION_GUIDE.md` - Complete email verification guide
   - `ENHANCED_EMAIL_VERIFICATION.md` - Enhanced email system documentation
