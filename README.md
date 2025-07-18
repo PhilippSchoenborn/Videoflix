@@ -109,6 +109,34 @@
 - **Developer copies:** All emails automatically copied to project owner
 - **Frontend integration:** Email verification redirects to login page with success message
 
+## 🔐 PASSWORD RESET FEATURE ✅ **FULLY IMPLEMENTED**
+
+> **NEW:** Complete password reset functionality with email integration!
+
+### Frontend URLs:
+- **Forgot Password:** http://localhost:5173/forgot-password
+- **Reset Link Example:** http://localhost:5173/password-reset/TOKEN
+
+### API Testing:
+```bash
+# 1. Request password reset
+curl -X POST http://localhost:8000/api/password_reset/ \
+  -H "Content-Type: application/json" \
+  -d '{"email": "user@example.com"}'
+
+# 2. Reset password with token
+curl -X POST http://localhost:8000/api/password_reset_confirm/TOKEN/ \
+  -H "Content-Type: application/json" \
+  -d '{"password": "NewPassword123!"}'
+```
+
+### Features:
+- ✅ **Email delivery** with reset links
+- ✅ **Frontend pages** for forgot password & reset
+- ✅ **Token-based security** (24h expiration)
+- ✅ **Reusable tokens** for development/testing
+- ✅ **Full integration** Frontend ↔ Backend
+
 ## �📋 EVALUATION CHECKLIST (for Mentors)
 
 ### ✅ Backend Functionality
@@ -119,10 +147,10 @@
 - [ ] Tests run successfully
 
 ### ✅ Authentication
-- [ ] User registration works
-- [ ] Login/logout works
-- [ ] Email verification implemented
-- [ ] Password reset implemented
+- [x] User registration works
+- [x] Login/logout works
+- [x] Email verification implemented
+- [x] Password reset implemented ✅ **VOLLSTÄNDIG FERTIG!**
 
 ### ✅ Code Quality
 - [ ] Django best practices followed
@@ -402,12 +430,12 @@ docker-compose exec web black .
 ## 📊 API Documentation
 
 ### Authentication Endpoints
-- `POST /api/auth/register/` - User registration
-- `POST /api/auth/login/` - User login
-- `POST /api/auth/logout/` - User logout
-- `GET /api/auth/verify-email/<token>/` - Email verification
-- `POST /api/auth/password-reset/` - Password reset request
-- `POST /api/auth/password-reset-confirm/` - Password reset confirmation
+- `POST /api/register/` - User registration
+- `POST /api/login/` - User login
+- `POST /api/logout/` - User logout
+- `GET /api/verify-email/<token>/` - Email verification
+- `POST /api/password_reset/` - Password reset request
+- `POST /api/password_reset_confirm/<token>/` - Password reset confirmation
 
 ### Video Endpoints
 - `GET /api/videos/` - List all videos

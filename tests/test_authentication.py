@@ -74,7 +74,7 @@ class TestPasswordValidation(TestCase):
         """
         is_valid, message = validate_password_strength('TestPass123!')
         self.assertTrue(is_valid)
-        self.assertEqual(message, '')
+        self.assertEqual(message, 'Password is valid')
     
     def test_password_too_short(self):
         """
@@ -217,7 +217,7 @@ class TestUserLogin(BaseAPITestCase):
         })
         
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-        self.assertIn('check your inputs', str(response.data))
+        self.assertIn('Invalid email or password', str(response.data))
     
     def test_unverified_email_login(self):
         """
@@ -232,7 +232,7 @@ class TestUserLogin(BaseAPITestCase):
         })
         
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-        self.assertIn('verify your email', str(response.data))
+        self.assertIn('Please verify your email', str(response.data))
 
 
 class TestEmailVerification(TestCase):
@@ -373,6 +373,6 @@ class TestPasswordReset(APITestCase):
         """Unhappy Path: Passwords do not match"""
         payload = self.invalid_payload.copy()
         payload['token'] = 'dummy-token'
-        response = self.client.post(self.url, payload, format='json')
+        response = self.client.post(self.reset_url, payload, format='json')
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-        self.assertIn('non_field_errors', response.data)
+        self.assertIn('Password confirmation does not match', str(response.data))

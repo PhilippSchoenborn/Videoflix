@@ -248,26 +248,40 @@ class PasswordResetView(generics.GenericAPIView):
         """
         Reset user password with token
         """
-        serializer = self.get_serializer(data=request.data)
-        if not serializer.is_valid():
-            errors = serializer.errors
-            if 'token' in errors and 'password' in errors:
-                return Response({
-                    'error': 'Both token and password are required.'
-                }, status=status.HTTP_400_BAD_REQUEST)
-            elif 'token' in errors:
-                return Response({
-                    'error': 'Token is required.'
-                }, status=status.HTTP_400_BAD_REQUEST)
-            elif 'password' in errors:
+        # Token aus URL nehmen wenn vorhanden, sonst aus Body
+        url_token = kwargs.get('token')
+        
+        if url_token:
+            # Token aus URL verwenden
+            token = url_token
+            # Nur Password aus Body validieren
+            password = request.data.get('password')
+            if not password:
                 return Response({
                     'error': 'Password is required.'
                 }, status=status.HTTP_400_BAD_REQUEST)
-            else:
-                return Response(errors, status=status.HTTP_400_BAD_REQUEST)
-        
-        token = serializer.validated_data['token']
-        password = serializer.validated_data['password']
+        else:
+            # Fallback: Token und Password aus Body
+            serializer = self.get_serializer(data=request.data)
+            if not serializer.is_valid():
+                errors = serializer.errors
+                if 'token' in errors and 'password' in errors:
+                    return Response({
+                        'error': 'Both token and password are required.'
+                    }, status=status.HTTP_400_BAD_REQUEST)
+                elif 'token' in errors:
+                    return Response({
+                        'error': 'Token is required.'
+                    }, status=status.HTTP_400_BAD_REQUEST)
+                elif 'password' in errors:
+                    return Response({
+                        'error': 'Password is required.'
+                    }, status=status.HTTP_400_BAD_REQUEST)
+                else:
+                    return Response(errors, status=status.HTTP_400_BAD_REQUEST)
+            
+            token = serializer.validated_data['token']
+            password = serializer.validated_data['password']
         
         try:
             reset_token = PasswordResetToken.objects.get(
@@ -290,9 +304,9 @@ class PasswordResetView(generics.GenericAPIView):
             user.set_password(password)
             user.save()
             
-            # Mark token as used
-            reset_token.used = True
-            reset_token.save()
+            # Token bleibt wiederverwendbar für Testing/Development
+            # reset_token.used = True  # Kommentiert aus für mehrfache Nutzung
+            # reset_token.save()
             
             return Response(
                 {'message': 'Password reset successfully'},

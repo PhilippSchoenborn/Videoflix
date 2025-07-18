@@ -87,6 +87,7 @@ class BaseTestCase(TestCase):
         data.update(kwargs)
         user = User.objects.create_user(**data)
         user.is_email_verified = True
+        user.is_active = True
         user.save()
         return user
 
@@ -120,5 +121,6 @@ class BaseAPITestCase(APITestCase):
         data.update(kwargs)
         user = User.objects.create_user(**data)
         user.is_email_verified = True
+        user.is_active = True
         user.save()
         return user

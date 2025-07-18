@@ -23,5 +23,6 @@ urlpatterns = [
     path('verify-email/<str:token>/', verify_email_token_view, name='verify_email_token'),
     path('password_reset/', PasswordResetRequestView.as_view(), name='password_reset_request'),
     path('password_confirm/<str:uidb64>/<str:token>/', PasswordResetView.as_view(), name='password_reset'),
+    path('password_reset_confirm/<str:token>/', PasswordResetView.as_view(), name='password_reset_simple'),
     path('profile/', UserProfileView.as_view(), name='profile'),
 ]

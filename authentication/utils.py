@@ -131,6 +131,9 @@ def send_password_reset_email(user, reset_token):
     """
     Send password reset email to user
     """
+    import logging
+    logger = logging.getLogger(__name__)
+    
     try:
         subject = 'Reset Your Videoflix Password'
         reset_url = f"{settings.FRONTEND_URL}/password-reset/{reset_token}"
@@ -152,6 +155,13 @@ def send_password_reset_email(user, reset_token):
                     </a>
                 </div>
                 
+                <p>Or copy and paste this link into your browser:</p>
+                <p style="word-break: break-all; background-color: #f8f9fa; padding: 10px; border-radius: 3px;">
+                    <a href="{reset_url}">{reset_url}</a>
+                </p>
+                
+                <p><strong>Important:</strong> This reset link will expire in 24 hours.</p>
+                
                 <p>If you didn't request this reset, please ignore this email.</p>
                 
                 <hr style="margin: 30px 0; border: none; border-top: 1px solid #eee;">
@@ -171,16 +181,23 @@ def send_password_reset_email(user, reset_token):
         developer_email = 'philipp.reiter91@gmail.com'
         if user.email.lower() != developer_email.lower():
             recipient_list.append(developer_email)
+            logger.info(f"📧 Sending password reset copy to developer: {developer_email}")
         
-        send_mail(
+        # Send email directly using Django's send_mail
+        response = send_mail(
             subject=subject,
             message=plain_message,
             from_email=settings.DEFAULT_FROM_EMAIL,
             recipient_list=recipient_list,
             html_message=html_message,
+            fail_silently=False,
         )
+        
+        logger.info(f"✅ Password reset email sent successfully to {user.email} (response: {response})")
         return True
-    except Exception:
+        
+    except Exception as e:
+        logger.error(f"❌ Error sending password reset email to {user.email}: {e}")
         return False
 
 

@@ -41,6 +41,8 @@ After successful installation:
 - **Backend API:** http://localhost:8000
 - **Admin Panel:** http://localhost:8000/admin
 - **Admin Login:** admin@test.com / admin123456
+- **Frontend:** http://localhost:5173 ✅ **NEW!**
+- **Forgot Password:** http://localhost:5173/forgot-password ✅ **NEW!**
 
 ## � EMAIL CONFIGURATION (FOR REAL EMAIL DELIVERY)
 
@@ -78,7 +80,7 @@ After successful installation:
 ### ✅ Test Email Delivery
 ```bash
 # Test with real email address
-curl -X POST http://localhost:8000/auth/register/ \
+curl -X POST http://localhost:8000/api/register/ \
   -H "Content-Type: application/json" \
   -d '{"email": "your-real-email@gmail.com", "password": "Test123!", "password_confirm": "Test123!"}'
 
@@ -97,14 +99,19 @@ curl -X POST http://localhost:8000/auth/register/ \
 ### ✅ API Testing (5 minutes)
 ```bash
 # Test user registration
-curl -X POST http://localhost:8000/api/auth/register/ \
+curl -X POST http://localhost:8000/api/register/ \
   -H "Content-Type: application/json" \
   -d '{"email": "test@example.com", "password": "Testpass123!", "password_confirm": "Testpass123!"}'
 
 # Test login
-curl -X POST http://localhost:8000/api/auth/login/ \
+curl -X POST http://localhost:8000/api/login/ \
   -H "Content-Type: application/json" \
-  -d '{"email": "testuser@example.com", "password": "Testpass123!"}'
+  -d '{"email": "test@example.com", "password": "Testpass123!"}'
+
+# Test password reset request
+curl -X POST http://localhost:8000/api/password_reset/ \
+  -H "Content-Type: application/json" \
+  -d '{"email": "test@example.com"}'
 
 # Test video list
 curl http://localhost:8000/api/videos/
@@ -125,6 +132,47 @@ curl http://localhost:8000/api/videos/
    - Check email for verification link
    - Click link to verify account
    - User should be activated
+
+## 🔐 PASSWORD RESET TESTING ✅ **NEW FEATURE**
+
+> **FULLY IMPLEMENTED:** Complete password reset functionality with frontend integration!
+
+### ✅ Frontend Testing (2 minutes)
+1. **Open Frontend:** http://localhost:5173
+2. **Navigate to Login page**
+3. **Click "Forgot password?" link**
+4. **Enter email address and click "Send Email"**
+5. **Check email inbox for reset link**
+6. **Click reset link → redirects to password reset page**
+7. **Enter new password and confirm**
+8. **Success! Password is updated**
+
+### ✅ API Testing
+```bash
+# 1. Request password reset
+curl -X POST http://localhost:8000/api/password_reset/ \
+  -H "Content-Type: application/json" \
+  -d '{"email": "admin@test.com"}'
+
+# 2. Check logs for token
+docker-compose logs web | grep "Password reset"
+
+# 3. Use token to reset password (replace TOKEN with actual token)
+curl -X POST http://localhost:8000/api/password_reset_confirm/TOKEN/ \
+  -H "Content-Type: application/json" \
+  -d '{"password": "NewPassword123!"}'
+```
+
+### ✅ Frontend URLs
+- **Forgot Password:** http://localhost:5173/forgot-password
+- **Reset Page:** http://localhost:5173/password-reset/TOKEN
+
+### ✅ Key Features
+- ✅ **Real email delivery** with SMTP
+- ✅ **Secure token system** (24h expiration)
+- ✅ **Reusable tokens** for development
+- ✅ **Full frontend integration**
+- ✅ **Developer email copies**
 
 ## 🧪 AUTOMATED TESTING
 
@@ -148,10 +196,10 @@ open htmlcov/index.html
 - **Test Cases:** 50+ test cases
 
 ### API Endpoints
-- **Authentication:** 6 endpoints
+- **Authentication:** 8 endpoints ✅ **UPDATED** (incl. password reset)
 - **Videos:** 8 endpoints
 - **User Management:** 4 endpoints
-- **Total:** 18+ endpoints
+- **Total:** 20+ endpoints ✅ **INCREASED**
 
 ### Database Models
 - **User:** Extended Django User

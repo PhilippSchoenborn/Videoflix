@@ -29,6 +29,7 @@ urlpatterns = [
     # API endpoints direkt unter /api/
     path('api/', include('authentication.urls')),  # Alle Auth-Endpoints direkt unter /api/
     path('api/videos/', include('videos.urls')),             # Video-API
+    path('api/content/', include(('content.urls', 'content'), namespace='content')),  # Content-API  
     path('api/health/', views.health_check, name='health_check'),
     
     # Legal pages

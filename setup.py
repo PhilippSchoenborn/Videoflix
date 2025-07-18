@@ -12,6 +12,7 @@ import sys
 import subprocess
 import time
 import shutil
+import threading
 
 # Colors for output
 class Colors:
@@ -21,6 +22,45 @@ class Colors:
     BLUE = '\033[94m'
     BOLD = '\033[1m'
     END = '\033[0m'
+    CYAN = '\033[96m'
+
+class ProgressBar:
+    """Simple progress bar with spinner"""
+    def __init__(self, message="Working"):
+        self.message = message
+        self.running = False
+        self.thread = None
+        self.spinner_chars = "⠋⠙⠹⠸⠼⠴⠦⠧⠇⠏"
+        self.current_char = 0
+    
+    def start(self):
+        self.running = True
+        self.thread = threading.Thread(target=self._animate)
+        self.thread.daemon = True
+        self.thread.start()
+    
+    def stop(self):
+        self.running = False
+        if self.thread:
+            self.thread.join()
+        # Clear the line
+        print(f"\r{' ' * 80}\r", end='', flush=True)
+    
+    def _animate(self):
+        while self.running:
+            char = self.spinner_chars[self.current_char % len(self.spinner_chars)]
+            print(f"\r{Colors.CYAN}{char} {self.message}...{Colors.END}", end='', flush=True)
+            self.current_char += 1
+            time.sleep(0.1)
+
+def print_progress_step(step, total, message):
+    """Print progress step with bar"""
+    percentage = (step / total) * 100
+    bar_length = 40
+    filled_length = int(bar_length * step // total)
+    bar = '█' * filled_length + '-' * (bar_length - filled_length)
+    print(f"\r{Colors.BLUE}[{bar}] {percentage:.1f}% - {message}{Colors.END}")
+    print()  # New line after progress
 
 def print_success(message):
     print(f"{Colors.GREEN}✅ {message}{Colors.END}")
@@ -39,14 +79,23 @@ def print_header(message):
     print(f"{Colors.BOLD}{Colors.BLUE}{message}{Colors.END}")
     print(f"{Colors.BOLD}{Colors.BLUE}{'='*60}{Colors.END}\n")
 
-def run_command(command, description):
-    """Runs a shell command with proper error handling"""
+def run_command(command, description, show_progress=False):
+    """Runs a shell command with proper error handling and optional progress"""
     print_info(f"{description}...")
+    
+    progress = None
+    if show_progress:
+        progress = ProgressBar(description)
+        progress.start()
+    
     try:
         if isinstance(command, str):
             result = subprocess.run(command, shell=True, capture_output=True, text=True, timeout=300)
         else:
             result = subprocess.run(command, capture_output=True, text=True, timeout=300)
+        
+        if progress:
+            progress.stop()
         
         if result.returncode != 0:
             print_error(f"Command failed: {command}")
@@ -55,14 +104,18 @@ def run_command(command, description):
         
         return True, result.stdout
     except subprocess.TimeoutExpired:
+        if progress:
+            progress.stop()
         print_error(f"Command timed out: {command}")
         return False, "Timeout"
     except Exception as e:
+        if progress:
+            progress.stop()
         print_error(f"Command error: {e}")
         return False, str(e)
 
 def check_docker():
-    """Check if Docker is running"""
+    """Check if Docker is running and ports are available"""
     print_header("🐳 CHECKING DOCKER")
     
     # Check Docker
@@ -77,39 +130,61 @@ def check_docker():
         print_error("Docker Compose is not installed")
         return False
     
+    # Check critical ports
+    print_info("Checking required ports...")
+    critical_ports = [5432, 6379, 8000]  # PostgreSQL, Redis, Django
+    
+    for port in critical_ports:
+        try:
+            import socket
+            sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            result = sock.connect_ex(('localhost', port))
+            sock.close()
+            
+            if result == 0:
+                print_warning(f"Port {port} is already in use - this may cause conflicts")
+                print_info(f"Attempting to stop any containers using port {port}...")
+                # Try to find and stop containers using this port
+                subprocess.run(f"docker ps --filter 'publish={port}' -q | xargs -r docker stop", 
+                             shell=True, capture_output=True)
+            else:
+                print_success(f"Port {port} is available")
+        except Exception as e:
+            print_info(f"Could not check port {port}: {e}")
+    
     print_success("Docker environment is ready")
     return True
 
 def cleanup_environment():
-    """Clean up old containers and migrations"""
+    """Clean up old containers and migrations - FAST VERSION"""
     print_header("🧹 CLEANING ENVIRONMENT")
     
-    # Stop and remove containers
+    # Stop and remove containers quickly
     print_info("Stopping containers...")
-    subprocess.run("docker-compose down -v", shell=True, capture_output=True)
+    subprocess.run("docker-compose down -v --remove-orphans", shell=True, capture_output=True)
     
-    # Clean Docker system
-    print_info("Cleaning Docker system...")
+    # Quick Docker cleanup (not aggressive)
+    print_info("Quick Docker cleanup...")
     subprocess.run("docker system prune -f", shell=True, capture_output=True)
     
-    # Clean migrations
+    # Clean migrations locally only (container cleanup happens later)
     print_info("Cleaning old migrations...")
     migration_dirs = [
         "authentication/migrations",
         "videos/migrations", 
-        "utils/migrations",
-        "content/migrations"
+        "utils/migrations"
     ]
     
     for migration_dir in migration_dirs:
         if os.path.exists(migration_dir):
             for file in os.listdir(migration_dir):
-                if file.endswith('.py') and file not in ['__init__.py', '0001_initial.py']:
+                if file.endswith('.py') and file != '__init__.py':
                     try:
-                        os.remove(os.path.join(migration_dir, file))
-                        print_info(f"Removed {file}")
+                        file_path = os.path.join(migration_dir, file)
+                        os.remove(file_path)
+                        print_info(f"Removed {file_path}")
                     except:
-                        pass
+                        pass  # Ignore errors, keep it fast
     
     print_success("Environment cleaned")
     return True
@@ -137,107 +212,217 @@ def setup_env_file():
     return True
 
 def build_and_start():
-    """Build and start containers with health checks"""
+    """Build and start containers with progress feedback"""
     print_header("🏗️  BUILDING CONTAINERS")
     
-    # Build containers
-    success, output = run_command("docker-compose build --no-cache", "Building containers")
-    if not success:
-        print_error("Failed to build containers")
+    # Build containers with progress
+    print_info("Building Docker containers (this may take a few minutes)...")
+    progress = ProgressBar("Building containers - downloading base images and dependencies")
+    progress.start()
+    
+    try:
+        result = subprocess.run("docker-compose build --no-cache", shell=True, capture_output=True, text=True, timeout=600)
+        progress.stop()
+        
+        if result.returncode != 0:
+            print_error("Failed to build containers")
+            print_error(f"Build output: {result.stderr}")
+            return False
+        else:
+            print_success("Containers built successfully")
+    except subprocess.TimeoutExpired:
+        progress.stop()
+        print_error("Container build timed out (10 minutes)")
+        return False
+    except Exception as e:
+        progress.stop()
+        print_error(f"Build error: {e}")
         return False
     
-    # Start containers
-    success, output = run_command("docker-compose up -d", "Starting containers")
-    if not success:
-        print_error("Failed to start containers")
+    # Start containers with progress
+    print_info("Starting containers...")
+    start_progress = ProgressBar("Starting all services")
+    start_progress.start()
+    
+    try:
+        result = subprocess.run("docker-compose up -d", shell=True, capture_output=True, text=True, timeout=120)
+        start_progress.stop()
+        
+        if result.returncode != 0:
+            print_error("Failed to start containers")
+            print_error(f"Start output: {result.stderr}")
+            return False
+        else:
+            print_success("Containers started successfully")
+    except Exception as e:
+        start_progress.stop()
+        print_error(f"Start error: {e}")
         return False
     
-    print_success("Containers started")
     return True
 
 def wait_for_services():
-    """Wait for all services to be healthy"""
+    """Wait for all services to be healthy with visual progress"""
     print_header("⏳ WAITING FOR SERVICES")
     
-    max_attempts = 30
-    wait_time = 5
+    max_attempts = 12
+    wait_time = 2
+    
+    print_info("Checking service health...")
     
     for attempt in range(max_attempts):
-        print_info(f"Health check {attempt + 1}/{max_attempts}")
+        # Progress indicator
+        percentage = (attempt / max_attempts) * 100
+        bar_length = 30
+        filled_length = int(bar_length * attempt // max_attempts)
+        bar = '█' * filled_length + '░' * (bar_length - filled_length)
         
-        # Check all services
+        print(f"\r{Colors.CYAN}[{bar}] {percentage:.0f}% - Health check {attempt + 1}/{max_attempts}{Colors.END}", end='', flush=True)
+        
+        # Check if containers are running first
+        result = subprocess.run(["docker-compose", "ps"], capture_output=True, text=True)
+        if "Up" not in result.stdout:
+            print(f"\n{Colors.RED}⚠️  Some containers are not running!{Colors.END}")
+            subprocess.run(["docker-compose", "ps"])
+            return False
+        
+        # Quick service checks
         services_ready = True
+        service_status = []
         
         # PostgreSQL
         result = subprocess.run(
-            ["docker-compose", "exec", "-T", "db", "pg_isready", "-U", "postgres"],
+            ["docker-compose", "exec", "-T", "db", "pg_isready", "-U", "videoflix", "-d", "videoflix"],
             capture_output=True, text=True
         )
-        if result.returncode != 0:
-            print_info("PostgreSQL not ready...")
-            services_ready = False
+        if result.returncode == 0:
+            service_status.append("✅ DB")
         else:
-            print_success("PostgreSQL ready")
+            service_status.append("⏳ DB")
+            services_ready = False
         
         # Redis
         result = subprocess.run(
             ["docker-compose", "exec", "-T", "redis", "redis-cli", "ping"],
             capture_output=True, text=True
         )
-        if result.returncode != 0 or "PONG" not in result.stdout:
-            print_info("Redis not ready...")
-            services_ready = False
+        if result.returncode == 0 and "PONG" in result.stdout:
+            service_status.append("✅ Redis")
         else:
-            print_success("Redis ready")
+            service_status.append("⏳ Redis")
+            services_ready = False
         
         # Web service
         result = subprocess.run(
-            ["docker-compose", "exec", "-T", "web", "python", "manage.py", "check"],
-            capture_output=True, text=True
+            ["docker-compose", "exec", "-T", "web", "python", "-c", "print('OK')"],
+            capture_output=True, text=True, timeout=5
         )
-        if result.returncode != 0:
-            print_info("Web service not ready...")
-            services_ready = False
+        if result.returncode == 0 and "OK" in result.stdout:
+            service_status.append("✅ Web")
         else:
-            print_success("Web service ready")
+            service_status.append("⏳ Web")
+            services_ready = False
+        
+        # Update the line with service status
+        status_str = " | ".join(service_status)
+        print(f"\r{Colors.CYAN}[{bar}] {percentage:.0f}% - {status_str}{Colors.END}                    ", end='', flush=True)
         
         if services_ready:
-            print_success("All services are healthy!")
+            print(f"\n{Colors.GREEN}✅ All services are healthy!{Colors.END}")
             return True
         
+        # Only wait if not the last attempt
         if attempt < max_attempts - 1:
-            print_info(f"Waiting {wait_time} seconds...")
             time.sleep(wait_time)
     
-    print_error("Services failed to start properly")
+    print(f"\n{Colors.RED}❌ Services failed to start after {max_attempts * wait_time} seconds{Colors.END}")
     print_info("Container status:")
     subprocess.run(["docker-compose", "ps"])
     return False
+    
+    print_error("Services failed to start properly")
+    print_info("Final diagnostic - Container status:")
+    subprocess.run(["docker-compose", "ps"])
+    print_info("Final diagnostic - Recent logs:")
+    subprocess.run(["docker-compose", "logs", "--tail=20"])
+    return False
 
 def setup_database():
-    """Setup database with migrations"""
+    """Setup database with migrations and progress feedback"""
     print_header("🗄️  SETTING UP DATABASE")
     
-    # Create migrations
+    # Step 1: Quick migration cleanup in container
+    success, output = run_command(
+        "docker-compose exec -T web find . -path '*/migrations/*.py' -not -name '__init__.py' -delete",
+        "Cleaning old migrations", show_progress=True
+    )
+    
+    # Step 2: Create fresh migrations
     success, output = run_command(
         "docker-compose exec -T web python manage.py makemigrations",
-        "Creating migrations"
+        "Creating fresh migrations", show_progress=True
     )
+    
     if not success:
         print_warning("Migration creation had issues, continuing...")
     
-    # Run migrations
-    success, output = run_command(
-        "docker-compose exec -T web python manage.py migrate",
-        "Running migrations"
-    )
-    if not success:
-        print_error("Database migration failed")
-        print_error(f"Output: {output}")
-        return False
+    # Step 3: Apply migrations with progress
+    print_info("Applying database migrations...")
+    migration_progress = ProgressBar("Setting up database tables and relationships")
+    migration_progress.start()
     
-    print_success("Database setup completed")
-    return True
+    try:
+        result = subprocess.run(
+            "docker-compose exec -T web python manage.py migrate",
+            shell=True, capture_output=True, text=True, timeout=120
+        )
+        migration_progress.stop()
+        
+        if result.returncode != 0:
+            print_warning("Migration failed, trying database reset...")
+            
+            # Reset database with progress
+            reset_progress = ProgressBar("Resetting database schema")
+            reset_progress.start()
+            
+            try:
+                subprocess.run(
+                    "docker-compose exec -T db psql -U videoflix -d videoflix -c 'DROP SCHEMA public CASCADE; CREATE SCHEMA public; GRANT ALL ON SCHEMA public TO videoflix;'",
+                    shell=True, capture_output=True, text=True, timeout=60
+                )
+                reset_progress.stop()
+                
+                # Try migrations again
+                retry_progress = ProgressBar("Re-applying migrations after reset")
+                retry_progress.start()
+                
+                result = subprocess.run(
+                    "docker-compose exec -T web python manage.py migrate",
+                    shell=True, capture_output=True, text=True, timeout=120
+                )
+                retry_progress.stop()
+                
+                if result.returncode != 0:
+                    print_error("Database setup failed completely")
+                    print_error(f"Output: {result.stderr}")
+                    return False
+                    
+            except Exception as e:
+                reset_progress.stop()
+                print_error(f"Database reset failed: {e}")
+                return False
+        
+        print_success("Database setup completed successfully")
+        return True
+        
+    except subprocess.TimeoutExpired:
+        migration_progress.stop()
+        print_error("Database migration timed out")
+        return False
+    except Exception as e:
+        migration_progress.stop()
+        print_error(f"Migration error: {e}")
+        return False
 
 def create_admin():
     """Create admin user"""
@@ -311,6 +496,12 @@ def show_final_status():
     print_info("  📖 See README.md for detailed email setup instructions")
     print_info("  🔗 Frontend should run on http://localhost:5173")
     
+    print_info("\n🔐 NEW FEATURES:")
+    print_info("  ✅ Password Reset fully implemented!")
+    print_info("  📧 Forgot Password: http://localhost:5173/forgot-password")
+    print_info("  🔄 Reset tokens can be reused for development")
+    print_info("  📬 Real email delivery with Gmail/Outlook SMTP")
+    
     print_info("\n⚠️  FOR MENTORS:")
     print_info("  If you see 'Connection refused' errors:")
     print_info("  1. Wait 30 seconds for all services to start")
@@ -319,7 +510,7 @@ def show_final_status():
     print_info("  4. Frontend URL should be http://localhost:5173")
 
 def main():
-    """Main setup function with error recovery"""
+    """Main setup function with progress tracking"""
     print_header("🎬 VIDEOFLIX BACKEND ROBUST SETUP")
     print_info("This script fixes common setup issues reported by mentors")
     
@@ -334,8 +525,10 @@ def main():
         ("Basic Tests", run_basic_tests),
     ]
     
-    for step_name, step_function in steps:
-        print_info(f"\n🔄 Starting: {step_name}")
+    total_steps = len(steps)
+    
+    for step_num, (step_name, step_function) in enumerate(steps, 1):
+        print_progress_step(step_num, total_steps, f"Starting: {step_name}")
         
         if not step_function():
             print_error(f"❌ Step failed: {step_name}")
@@ -350,6 +543,9 @@ def main():
             return False
         
         print_success(f"✅ Completed: {step_name}")
+    
+    # Final progress bar at 100%
+    print_progress_step(total_steps, total_steps, "Setup Complete!")
     
     show_final_status()
     return True
