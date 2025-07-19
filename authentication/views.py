@@ -332,3 +332,30 @@ class UserProfileView(generics.RetrieveUpdateAPIView):
         Return the current user
         """
         return self.request.user
+
+
+@api_view(['POST'])
+@permission_classes([permissions.AllowAny])
+def check_email_exists(request):
+    """
+    Check if email exists in the system
+    """
+    email = request.data.get('email')
+    if not email:
+        return Response(
+            {'error': 'Email is required'}, 
+            status=status.HTTP_400_BAD_REQUEST
+        )
+    
+    try:
+        user_exists = User.objects.filter(email__iexact=email).exists()
+        return Response({
+            'exists': user_exists,
+            'email': email
+        }, status=status.HTTP_200_OK)
+    except Exception as e:
+        logger.error(f"Error checking email existence: {str(e)}")
+        return Response(
+            {'error': 'An error occurred while checking email'}, 
+            status=status.HTTP_500_INTERNAL_SERVER_ERROR
+        )

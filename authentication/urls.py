@@ -10,7 +10,8 @@ from .views import (
     verify_email_token_view,
     PasswordResetRequestView,
     PasswordResetView,
-    UserProfileView
+    UserProfileView,
+    check_email_exists
 )
 
 app_name = 'authentication'
@@ -25,4 +26,5 @@ urlpatterns = [
     path('password_confirm/<str:uidb64>/<str:token>/', PasswordResetView.as_view(), name='password_reset'),
     path('password_reset_confirm/<str:token>/', PasswordResetView.as_view(), name='password_reset_simple'),
     path('profile/', UserProfileView.as_view(), name='profile'),
+    path('check-email/', check_email_exists, name='check_email'),
 ]
