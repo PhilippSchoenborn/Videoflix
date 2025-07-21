@@ -20,6 +20,12 @@ def create_user_profile_actions(sender, instance, created, **kwargs):
     """
     if created:
         logger.info(f'New user created: {instance.email} (ID: {instance.id})')
+        
+        # Skip email verification for superusers (admin users)
+        if instance.is_superuser:
+            logger.info(f'Skipping email verification for superuser: {instance.email}')
+            return
+            
         # Entferne automatische Verifizierung im DEBUG
         # Nur Token erzeugen, keine automatische Verifizierung
         try:

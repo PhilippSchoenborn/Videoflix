@@ -1,11 +1,29 @@
 """
 Custom User Model for Videoflix Authentication
 """
-from django.contrib.auth.models import AbstractUser
+from django.contrib.auth.models import AbstractUser, UserManager
 from django.db import models
 from django.utils.translation import gettext_lazy as _
 from django.utils import timezone
 from datetime import timedelta
+
+
+class CustomUserManager(UserManager):
+    """Custom manager for CustomUser model"""
+    
+    def create_superuser(self, username, email=None, password=None, **extra_fields):
+        """Create and save a SuperUser with the given email and password."""
+        extra_fields.setdefault('is_staff', True)
+        extra_fields.setdefault('is_superuser', True)
+        extra_fields.setdefault('is_active', True)  # Superusers are always active
+        extra_fields.setdefault('is_email_verified', True)  # Superusers don't need email verification
+
+        if extra_fields.get('is_staff') is not True:
+            raise ValueError('Superuser must have is_staff=True.')
+        if extra_fields.get('is_superuser') is not True:
+            raise ValueError('Superuser must have is_superuser=True.')
+
+        return self.create_user(username, email, password, **extra_fields)
 
 
 class CustomUser(AbstractUser):
@@ -30,6 +48,9 @@ class CustomUser(AbstractUser):
         blank=True,
         help_text=_('User\'s date of birth (optional).')
     )
+
+    # Use custom manager
+    objects = CustomUserManager()
     profile_image = models.ImageField(
         upload_to='profile_images/',
         null=True,
