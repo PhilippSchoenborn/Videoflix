@@ -347,6 +347,73 @@ def wait_for_services():
     subprocess.run(["docker-compose", "logs", "--tail=20"])
     return False
 
+def ensure_migration_directories():
+    """Ensure migration directories exist with __init__.py files"""
+    migration_dirs = ['videos/migrations', 'authentication/migrations']
+    
+    for migration_dir in migration_dirs:
+        os.makedirs(migration_dir, exist_ok=True)
+        init_file = os.path.join(migration_dir, '__init__.py')
+        if not os.path.exists(init_file):
+            with open(init_file, 'w') as f:
+                f.write('# Django migrations\n')
+            print_info(f"  ✓ Created {init_file}")
+
+def regenerate_migrations():
+    """Remove old migrations and create fresh ones with current timestamp"""
+    print_header("🔄 REGENERATING MIGRATIONS")
+    print_info("Creating fresh migrations with current timestamp to avoid conflicts...")
+    
+    # Ensure migration directories exist
+    ensure_migration_directories()
+    
+    # Remove existing migration files (but keep __init__.py)
+    migration_dirs = ['videos/migrations', 'authentication/migrations']
+    
+    for migration_dir in migration_dirs:
+        if os.path.exists(migration_dir):
+            for file in os.listdir(migration_dir):
+                if file.endswith('.py') and file != '__init__.py':
+                    file_path = os.path.join(migration_dir, file)
+                    try:
+                        os.remove(file_path)
+                        print_info(f"  ✓ Removed old migration: {file}")
+                    except OSError:
+                        pass  # File might not exist, that's okay
+    
+    # Wait for services to be ready first
+    print_info("Waiting for database to be ready...")
+    time.sleep(5)
+    
+    # Create fresh migrations for videos app
+    success, output = run_command(
+        "docker-compose exec -T web python manage.py makemigrations videos",
+        "Creating fresh migrations for videos app"
+    )
+    
+    if not success:
+        print_warning(f"Videos migrations warning: {output}")
+        # Continue anyway, might be because no changes detected
+    
+    # Create fresh migrations for authentication app  
+    success, output = run_command(
+        "docker-compose exec -T web python manage.py makemigrations authentication",
+        "Creating fresh migrations for authentication app"
+    )
+    
+    if not success:
+        print_warning(f"Authentication migrations warning: {output}")
+        # Continue anyway, might be because no changes detected
+    
+    # Create any other migrations
+    success, output = run_command(
+        "docker-compose exec -T web python manage.py makemigrations",
+        "Creating any additional migrations"
+    )
+    
+    print_success("✓ Fresh migrations created successfully with current timestamp")
+    return True
+
 def setup_database():
     """Setup database with migrations and progress feedback"""
     print_header("🗄️  SETTING UP DATABASE")
@@ -520,6 +587,7 @@ def main():
         ("Environment Setup", setup_env_file),
         ("Container Build", build_and_start),
         ("Service Health Check", wait_for_services),
+        ("Migration Regeneration", regenerate_migrations),
         ("Database Setup", setup_database),
         ("Admin User Creation", create_admin),
         ("Basic Tests", run_basic_tests),
