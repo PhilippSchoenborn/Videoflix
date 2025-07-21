@@ -7,10 +7,6 @@
 ## 🚀 QUICK START (for Mentors)
 
 ### 📋 Check Prerequisites
-- ✅ **Docker Desktop** installed and running
-- ✅ **Git** installed
-- ✅ **Windows PowerShell** or Terminal
-- ✅ At least 8GB RAM
 
 ### ⚡ 1-CLICK INSTALLATION
 
@@ -78,6 +74,92 @@
 4. **Test system**
    ```bash
    docker-compose exec web python manage.py test
+   
+# 🎬 Videoflix - Django REST API Backend
+
+> **MENTOR GUIDE: SIMPLE INSTALLATION**
+>
+> **This README is optimized for mentors. All steps are automated and mentor-proof.**
+> **English comments are provided throughout for clarity.**
+
+## 🚀 QUICK START (for Mentors)
+
+### 📋 Prerequisites
+- ✅ **Docker Desktop** installed and running
+- ✅ **Git** installed
+- ✅ **Windows PowerShell** or Terminal
+- ✅ At least 8GB RAM
+
+### ⚡ 1-CLICK INSTALLATION
+
+1. **Clone repository**
+   ```bash
+   git clone https://github.com/PhilippSchoenborn/Videoflix.git
+   cd Videoflix
+   ```
+
+2. **Run automatic setup**
+   ```bash
+   python setup.py
+   ```
+   # This script will:
+   # - Check system requirements
+   # - Build Docker containers
+   # - Set up the database
+   # - Create admin user
+   # - Run tests
+   # All steps are fully automated and errors are logged to setup.log
+
+3. **Done!** 🎉
+   - Backend: http://localhost:8000
+   - Admin: http://localhost:8000/admin
+   - Login: admin@test.com / admin123456
+
+### 🛠️ TROUBLESHOOTING (if setup fails)
+
+**If the setup script fails, use these diagnostic tools:**
+
+1. **Complete system diagnosis:**
+   ```bash
+   bash diagnose.sh
+   # Runs a full diagnostic and prints all errors and logs
+   ```
+
+2. **Nuclear reset (fresh start):**
+   ```bash
+   bash reset.sh
+   # Removes all containers, volumes, and resets the environment
+   ```
+
+3. **Manual inspection:**
+   ```bash
+   docker-compose ps          # Check container status
+   docker-compose logs web    # Check web container logs
+   docker-compose logs db     # Check database logs
+   # Use these commands to debug if something fails
+   ```
+
+### 🧰 MANUAL INSTALLATION (if setup script doesn't work)
+
+1. **Start containers**
+   ```bash
+   docker-compose up -d --build
+   ```
+
+2. **Set up database**
+   ```bash
+   docker-compose exec web python manage.py migrate
+   ```
+
+3. **Create admin user**
+   ```bash
+   docker-compose exec web python create_admin.py
+   ```
+
+4. **Test system**
+   ```bash
+   docker-compose exec web python manage.py test
+   ```
    ```
 
 ## � EMAIL CONFIGURATION (Optional but Recommended)

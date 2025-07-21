@@ -1,6 +1,10 @@
+
 # 🎓 MENTOR GUIDE - VIDEOFLIX BACKEND
 
-> **⚡ QUICK START: 3 MINUTES TO A RUNNING SYSTEM**
+> **QUICK START: 3 MINUTES TO A RUNNING SYSTEM**
+>
+> **This guide is written for mentors. All steps are automated and mentor-proof.**
+> **English comments are provided throughout for clarity.**
 
 ## 🚀 INSTANT INSTALLATION
 
@@ -12,14 +16,21 @@ cd Videoflix
 
 # 2. Start automatic setup
 python setup.py
+# This script will:
+# - Build and start all containers
+# - Set up the database
+# - Create admin user
+# - Run tests
+# All steps are fully automated and errors are logged to setup.log
 
 # 3. Done! System is ready
 ```
 
 ### Option 2: Windows Batch File
 ```bash
-# Double-click on start.bat
+# Double-click on start.bat (if available)
 start.bat
+# This is only for legacy support. Prefer python setup.py
 ```
 
 ### Option 3: Manual Setup
