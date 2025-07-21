@@ -34,6 +34,28 @@ docker-compose exec web python manage.py migrate
 docker-compose exec web python create_admin.py
 ```
 
+## 🛠️ IF SETUP FAILS (Troubleshooting Tools)
+
+**Use these powerful diagnostic tools:**
+
+### Complete System Diagnosis
+```bash
+bash diagnose.sh    # Shows container status, logs, DB connection
+```
+
+### Nuclear Reset (Fresh Start)
+```bash
+bash reset.sh       # Completely wipes and rebuilds everything
+```
+
+### Manual Diagnostics
+```bash
+docker-compose ps              # Container status
+docker-compose logs web        # Web container logs  
+docker-compose logs db         # Database logs
+docker system df               # Docker space usage
+```
+
 ## ⚡ IMMEDIATE ACCESS
 
 After successful installation:

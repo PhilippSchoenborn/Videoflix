@@ -418,22 +418,7 @@ def setup_database():
     """Setup database with migrations and progress feedback"""
     print_header("🗄️  SETTING UP DATABASE")
     
-    # Step 1: Quick migration cleanup in container
-    success, output = run_command(
-        "docker-compose exec -T web find . -path '*/migrations/*.py' -not -name '__init__.py' -delete",
-        "Cleaning old migrations", show_progress=True
-    )
-    
-    # Step 2: Create fresh migrations
-    success, output = run_command(
-        "docker-compose exec -T web python manage.py makemigrations",
-        "Creating fresh migrations", show_progress=True
-    )
-    
-    if not success:
-        print_warning("Migration creation had issues, continuing...")
-    
-    # Step 3: Apply migrations with progress
+    # Apply migrations with progress (migrations already created by regenerate_migrations)
     print_info("Applying database migrations...")
     migration_progress = ProgressBar("Setting up database tables and relationships")
     migration_progress.start()

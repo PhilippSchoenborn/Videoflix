@@ -37,7 +37,28 @@
    - Admin: http://localhost:8000/admin
    - Login: admin@test.com / admin123456
 
-### 🔧 MANUAL INSTALLATION (if setup script doesn't work)
+### �️ TROUBLESHOOTING (if setup fails)
+
+**If the setup script fails, use these diagnostic tools:**
+
+1. **Complete system diagnosis:**
+   ```bash
+   bash diagnose.sh
+   ```
+
+2. **Nuclear reset (fresh start):**
+   ```bash
+   bash reset.sh
+   ```
+
+3. **Manual inspection:**
+   ```bash
+   docker-compose ps          # Check container status
+   docker-compose logs web    # Check web container logs
+   docker-compose logs db     # Check database logs
+   ```
+
+### �🔧 MANUAL INSTALLATION (if setup script doesn't work)
 
 1. **Start containers**
    ```bash
