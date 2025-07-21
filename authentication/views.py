@@ -161,18 +161,15 @@ def verify_email_view(request, uidb64, token):
 @permission_classes([permissions.AllowAny])
 def verify_email_token_view(request, token):
     """
-    Email verification endpoint with automatic redirect to frontend login
+    Email verification endpoint - returns JSON response for API calls
     """
-    from django.shortcuts import redirect
-    from django.conf import settings
-    
     try:
         verification_token = EmailVerificationToken.objects.get(token=token)
         
         if verification_token.is_expired():
-            # Redirect to frontend with error
-            frontend_url = getattr(settings, 'FRONTEND_URL', 'http://localhost:5173')
-            return redirect(f"{frontend_url}/login?verification=expired")
+            return Response({
+                'error': 'Verification link has expired. Please request a new verification email.'
+            }, status=status.HTTP_400_BAD_REQUEST)
         
         user = verification_token.user
         
@@ -185,16 +182,16 @@ def verify_email_token_view(request, token):
         # Remove verification token
         verification_token.delete()
         
-        logger.info(f"✅ User {user.email} verified successfully via web interface (is_active={user.is_active}, is_email_verified={getattr(user, 'is_email_verified', None)})")
+        logger.info(f"✅ User {user.email} verified successfully via API (is_active={user.is_active}, is_email_verified={getattr(user, 'is_email_verified', None)})")
         
-        # Redirect to frontend login page with success message
-        frontend_url = getattr(settings, 'FRONTEND_URL', 'http://localhost:5173')
-        return redirect(f"{frontend_url}/login?verification=success&email={user.email}")
+        return Response({
+            'message': 'Email verified successfully! You can now log in.'
+        }, status=status.HTTP_200_OK)
         
     except EmailVerificationToken.DoesNotExist:
-        # Redirect to frontend with error
-        frontend_url = getattr(settings, 'FRONTEND_URL', 'http://localhost:5173')
-        return redirect(f"{frontend_url}/login?verification=invalid")
+        return Response({
+            'error': 'Invalid verification link. Please check your email or request a new verification email.'
+        }, status=status.HTTP_400_BAD_REQUEST)
 
 
 class PasswordResetRequestView(generics.GenericAPIView):

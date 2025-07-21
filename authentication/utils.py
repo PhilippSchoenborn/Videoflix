@@ -45,9 +45,9 @@ def send_verification_email(user, verification_token=None):
     
     try:
         subject = 'Verify Your Email Address - Videoflix'
-        # Use BACKEND_URL for verification links (mentor compatibility)
-        backend_url = getattr(settings, 'BACKEND_URL', 'http://localhost:8000')
-        verification_url = f"{backend_url}/api/verify-email/{verification_token}/"
+        # Use FRONTEND_URL for verification links (direct to frontend)
+        frontend_url = getattr(settings, 'FRONTEND_URL', 'http://localhost:5173')
+        verification_url = f"{frontend_url}/verify-email/{verification_token}"
         
         # Simple HTML email template
         html_message = f"""
