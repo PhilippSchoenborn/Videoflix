@@ -90,18 +90,18 @@ def run_command(command, description, show_progress=False):
     
     try:
         if isinstance(command, str):
-            result = subprocess.run(command, shell=True, capture_output=True, text=True, timeout=300)
+            result = subprocess.run(command, shell=True, capture_output=True, encoding='utf-8', errors='replace', timeout=300)
         else:
-            result = subprocess.run(command, capture_output=True, text=True, timeout=300)
-        
+            result = subprocess.run(command, capture_output=True, encoding='utf-8', errors='replace', timeout=300)
+
         if progress:
             progress.stop()
-        
+
         if result.returncode != 0:
             print_error(f"Command failed: {command}")
             print_error(f"Error: {result.stderr}")
             return False, result.stderr
-        
+
         return True, result.stdout
     except subprocess.TimeoutExpired:
         if progress:
@@ -213,15 +213,30 @@ def setup_env_file():
 
 def build_and_start():
     """Build and start containers with progress feedback"""
-    print_header("🏗️  BUILDING CONTAINERS")
-    
-    # Build containers with progress
+    print_header("\U0001f3d7️  BUILDING CONTAINERS")
+
+    # --- NEU: Konvertiere alle .sh-Skripte auf LF-Zeilenenden, um Bash-Probleme zu verhindern ---
+    import glob
+    sh_files = glob.glob("*.sh")
+    for sh_file in sh_files:
+        try:
+            with open(sh_file, "rb") as f:
+                content = f.read()
+            # Ersetze CRLF durch LF
+            content = content.replace(b"\r\n", b"\n")
+            with open(sh_file, "wb") as f:
+                f.write(content)
+            print_info(f"Konvertiert {sh_file} auf LF-Zeilenenden.")
+        except Exception as e:
+            print_warning(f"Konnte {sh_file} nicht konvertieren: {e}")
+
+    # Build containers mit Fortschritt
     print_info("Building Docker containers (this may take a few minutes)...")
     progress = ProgressBar("Building containers - downloading base images and dependencies")
     progress.start()
-    
+
     try:
-        result = subprocess.run("docker-compose build --no-cache", shell=True, capture_output=True, text=True, timeout=600)
+        result = subprocess.run("docker-compose build --no-cache", shell=True, capture_output=True, encoding='utf-8', errors='replace', timeout=600)
         progress.stop()
         
         if result.returncode != 0:
@@ -238,14 +253,14 @@ def build_and_start():
         progress.stop()
         print_error(f"Build error: {e}")
         return False
-    
-    # Start containers with progress
+
+    # Start containers mit Fortschritt
     print_info("Starting containers...")
     start_progress = ProgressBar("Starting all services")
     start_progress.start()
-    
+
     try:
-        result = subprocess.run("docker-compose up -d", shell=True, capture_output=True, text=True, timeout=120)
+        result = subprocess.run("docker-compose up -d", shell=True, capture_output=True, encoding='utf-8', errors='replace', timeout=120)
         start_progress.stop()
         
         if result.returncode != 0:
@@ -258,7 +273,7 @@ def build_and_start():
         start_progress.stop()
         print_error(f"Start error: {e}")
         return False
-    
+
     return True
 
 def wait_for_services():
