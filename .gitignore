@@ -177,5 +177,6 @@ archive/
 **/test_*.py
 **/tests_*.py
 postman_tests/
+email_credentials_backup.txt
 
 
