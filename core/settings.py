@@ -242,9 +242,9 @@ DEFAULT_FROM_EMAIL = os.environ.get('DEFAULT_FROM_EMAIL', default='videoflix@exa
 # Backend URL for activation links in email verification
 BACKEND_URL = os.environ.get('BACKEND_URL', default='http://localhost:8000')
 
-print(f"🔧 DIRECT SMTP CONFIG: {EMAIL_HOST}:{EMAIL_PORT} TLS:{EMAIL_USE_TLS}")
-print(f"🎯 EMAIL_BACKEND: {EMAIL_BACKEND}")
-print(f"📧 FROM_EMAIL: {DEFAULT_FROM_EMAIL}")
+print(f"[SMTP] CONFIG: {EMAIL_HOST}:{EMAIL_PORT} TLS:{EMAIL_USE_TLS}")
+print(f"[EMAIL] BACKEND: {EMAIL_BACKEND}")
+print(f"[EMAIL] FROM_EMAIL: {DEFAULT_FROM_EMAIL}")
 
 # Fallback: Email file storage for development/testing (commented out)
 # EMAIL_FILE_PATH = os.path.join(BASE_DIR, 'logs/emails')

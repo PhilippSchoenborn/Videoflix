@@ -22,9 +22,9 @@ def create_admin():
     email_exists = User.objects.filter(email='admin@test.com').exists()
     
     if admin_exists or email_exists:
-        print("✅ Admin user already exists - skipping creation")
-        print("📧 Login: admin@test.com")
-        print("🔑 Password: admin123456")
+        print("[OK] Admin user already exists - skipping creation")
+        print("[LOGIN] admin@test.com")
+        print("[PASSWORD] admin123456")
         return True
     
     try:
@@ -42,7 +42,7 @@ def create_admin():
         admin_user.is_active = True
         admin_user.save()
         
-        print("✅ Admin user successfully created:")
+        print("[OK] Admin user successfully created:")
         print(f"   - Username: {admin_user.username}")
         print(f"   - Email: {admin_user.email}")
         print(f"   - Password: admin123456")

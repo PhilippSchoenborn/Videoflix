@@ -119,19 +119,25 @@
 
 **If the setup script fails, use these diagnostic tools:**
 
-1. **Complete system diagnosis:**
+1. **Try the emergency setup first (RECOMMENDED):**
+   ```bash
+   python emergency_setup.py
+   # This is a simplified, ultra-robust setup script that handles common issues
+   ```
+
+2. **Complete system diagnosis:**
    ```bash
    bash diagnose.sh
    # Runs a full diagnostic and prints all errors and logs
    ```
 
-2. **Nuclear reset (fresh start):**
+3. **Nuclear reset (fresh start):**
    ```bash
    bash reset.sh
    # Removes all containers, volumes, and resets the environment
    ```
 
-3. **Manual inspection:**
+4. **Manual inspection:**
    ```bash
    docker-compose ps          # Check container status
    docker-compose logs web    # Check web container logs
