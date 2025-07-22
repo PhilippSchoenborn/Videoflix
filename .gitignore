@@ -171,12 +171,36 @@ archive/
 # Ignore test documentation and markdown outputs
 /tests/VALIDATION_FEATURES.md
 
-# Ignore all test files and folders
+# Ignore all test files and folders - COMPREHENSIVE CLEANUP
 /tests/
 **/tests/
 **/test_*.py
 **/tests_*.py
 postman_tests/
+test_setup.py
+troubleshoot.py
+validate.py
+verify_admin.py
+diagnose.sh
+emergency_setup.py
+
+# Ignore all backup, temporary and debug files
 email_credentials_backup.txt
+setup_failure_log.txt
+*.log
+coverage.ini
+.coveragerc
+pytest.ini
+reset.sh
 
+# Ignore all media and static files (generated content)
+/media/
+/static/
+/logs/
 
+# Ignore environment files (keep template)
+.env
+.env.local
+.env.development
+.env.test
+.env.production
